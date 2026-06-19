@@ -19,6 +19,12 @@ export {
 } from "./crypto/twisted-elgamal.ts";
 export { warmTable, babyTable } from "./crypto/dlog.ts";
 export {
+  splAuditorCiphertextParser,
+  sliceLoHi,
+  RISTRETTO_POINT_BYTES,
+  ELGAMAL_CIPHERTEXT_BYTES,
+} from "./crypto/parser.ts";
+export {
   defaultRules,
   thresholdRule,
   sanctionedRule,

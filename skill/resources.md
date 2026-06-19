@@ -27,5 +27,18 @@
 
 ## This skill's code
 
+- Crypto: `../lib/src/crypto` — real twisted-ElGamal over Ristretto255
+  (`@noble/curves`), baby-step-giant-step discrete log, and the canonical
+  `commitment||handle` ciphertext parser.
 - Engine + loop: `../lib/src` — pure AML engine, state, budgets, reporting, loop.
-- Tests: `../lib/test` — `bun test` (22 passing). Rules are unit-tested offline.
+- Tests: `../lib/test` — `bun test` (**30 passing**), incl. encrypt→decrypt
+  round-trips, semantic security, wrong-key-fails, parser round-trip. `tsc` clean.
+- Demo: `../examples/demo.ts` — `bun run demo`, full pipeline, no network.
+- CI: `.github/workflows/ci.yml` — install + typecheck + test + demo on every push.
+
+## Crypto references
+
+- Ristretto255 — https://ristretto.group
+- Twisted ElGamal / Solana zk-token-sdk (group, ciphertext layout) — see
+  solana-program confidential-balances docs above.
+- @noble/curves — https://github.com/paulmillr/noble-curves

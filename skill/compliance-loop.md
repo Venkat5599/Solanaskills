@@ -1,20 +1,22 @@
 # The Auditor Compliance Loop
 
-The loop is the product: `observe → decrypt → assess → report → repeat`, running
-continuously inside the auditor's trust boundary, with guaranteed termination.
+The loop is the product. Everything else — keys, crypto, rules, reports — exists
+to feed this cycle: **observe → decrypt → assess → report → repeat**, running
+continuously inside the auditor's trust boundary, with termination guaranteed.
+
+## The cycle
 
 ```
-        ┌──────────────────────────────────────────────┐
-        │                  every tick                   │
-        │                                               │
- observe├─► fetch new confidential transfers for mint   │  integration-helius.md
-        │      (cursor by slot/signature)               │
- decrypt├─► auditor key decrypts each amount            │  decryption.md
- assess ├─► ComplianceEngine.ingest() → Flag[]          │  aml-rules.md
- report ├─► every N transfers → hashed report           │  reporting.md
-        │                                               │
- budget │◄─ stop on iterations / time / RPC / breaker   │  budget-and-stops.md
-        └──────────────────────────────────────────────┘
+        ┌──────────────────────────── every tick ───────────────────────────┐
+        │                                                                    │
+ OBSERVE│  fetch confidential transfers newer than the cursor, oldest-first  │ integration-helius.md
+        │     │  (RPC poll or Helius webhook queue)                          │
+ DECRYPT│     ▼  auditor secret key → real amount per transfer (CT01/CT02)   │ decryption.md
+ ASSESS │     ▼  ComplianceEngine.ingest() → Flag[]   (pure, deterministic)  │ aml-rules.md
+ REPORT │     ▼  every N transfers + at shutdown → SHA-256 hashed report     │ reporting.md
+        │                                                                    │
+ BUDGET │◄──── stop on iterations / time / RPC / consecutive-errors ─────────│ budget-and-stops.md
+        └────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Minimal wiring
@@ -22,36 +24,67 @@ continuously inside the auditor's trust boundary, with guaranteed termination.
 ```ts
 import {
   ConfidentialComplianceLoop, ComplianceEngine, BudgetLedger,
-  defaultConfig, SplAuditorDecryptor,
+  defaultConfig, SplAuditorDecryptor, splAuditorCiphertextParser, DEFAULT_LIMBS,
 } from "solana-confidential-compliance";
 
-const engine = new ComplianceEngine(defaultConfig(6)); // 6 decimals
+const cfg = defaultConfig(6);                 // 6-decimal mint
+cfg.sanctioned = new Set(loadOfacAddresses());
+
 const loop = new ConfidentialComplianceLoop({
   mint, auditorPubkey,
-  decryptor: new SplAuditorDecryptor({ auditorElGamalSecret }),
-  engine,
-  budget: new BudgetLedger({ maxDurationMs: 8 * 3600_000, maxConsecutiveErrors: 5 }),
-  observe: fetchNewConfidentialTransfers, // (cursor) => Promise<ConfidentialTransferRecord[]>
-  onFlags: async (flags) => { for (const f of flags) await notify(f); },
-  onReport: async (r) => { await store.put(r.reportHash, r); },
+  decryptor: new SplAuditorDecryptor({
+    auditorElGamalSecret,                      // from HSM/TEE — CT01
+    parseAuditorCiphertext: splAuditorCiphertextParser(DEFAULT_LIMBS.limbs), // CT09
+  }),
+  engine: new ComplianceEngine(cfg),
+  budget: new BudgetLedger({ maxDurationMs: 8 * 3600_000, maxConsecutiveErrors: 5 }), // CT06
+  observe: fetchNewConfidentialTransfers,      // (cursor) => Promise<Record[]>, oldest-first — CT08
+  onFlags: async (flags) => { for (const f of flags) await route(f); },
+  onReport: async (r) => store.putImmutable(r.reportHash, r),  // CT07
   intervalMs: 15_000,
   reportEveryN: 500,
 });
 
-await loop.run();
+await loop.run();   // returns the final hashed report when a stop condition fires
 ```
 
-## Operating model
+## Two ways to drive it
 
-- **One loop per audited mint.** Each loop only ever decrypts the mint it is
-  authorized for. Run separate processes per mint to keep trust boundaries hard.
-- **Stateful + restart-safe.** The engine keeps rolling per-account windows in
-  memory; persist the cursor (`lastSlot`) so a restart resumes, not re-scans.
-- **Backpressure via budget.** `maxConsecutiveErrors` trips the breaker if RPC or
-  decryption keeps failing — better to halt and page a human than silently miss.
+| Method | Use for |
+|---|---|
+| `loop.run()` | production: loops until a budget/stop condition, emits a final report |
+| `loop.tick()` | tests, dry-runs, or driving from an external scheduler (`/loop`, cron) — one observe→decrypt→assess pass, returns `{ records, flags, report? }` |
 
-## Dry-run before going live
+## Operating model (the non-obvious parts)
 
-Use `MockAuditorDecryptor` (reads amounts from synthetic ciphertext) to replay a
-fixture of transfers through the full pipeline with zero crypto and zero network.
-The `/confidential-dryrun` command wraps this. See `aml-rules.md` for tuning.
+- **One loop ⇒ one mint ⇒ one key ⇒ one process (CT02).** Never share a decryptor
+  across mints. Separate processes keep trust boundaries physically hard, not just
+  logically.
+- **Stateful but restart-safe.** The engine keeps rolling per-account windows in
+  memory; the loop keeps a `cursor.lastSlot`. **Persist the cursor** after each
+  tick — on restart you resume, you do not re-scan (double-counts AML windows) and
+  you do not skip (misses transfers).
+- **Backpressure is the budget.** `maxConsecutiveErrors` trips the breaker when
+  RPC or decryption keeps failing. The loop halts and pages a human rather than
+  silently dropping transfers (CT03). For compliance, a loud stop beats a quiet gap.
+- **Reporting cadence is independent of detection.** Flags fire per-transfer (route
+  high-severity ones to a human immediately); reports roll up every `reportEveryN`
+  and at shutdown.
+
+## Long-running / overnight operation
+
+Set `maxDurationMs` to your run window and let `/loop` or cron restart the next
+window from the persisted cursor. Wire `loop.stop()` to `SIGTERM` for a clean
+container shutdown that still emits a final report.
+
+```bash
+# one bounded window per invocation; restart resumes from the cursor
+bun run watch-mint.ts   # constructs the loop, run(), persists cursor on exit
+```
+
+## Prove it before mainnet
+
+Drive the **entire** pipeline with `MockAuditorDecryptor` (or the real one against
+synthetic ciphertext) — no network, no key custody. `bun run demo` does exactly
+this end-to-end; `/confidential-dryrun` wraps it for your own fixtures. Tune in
+`aml-rules.md`, then point `observe` at live transfers.

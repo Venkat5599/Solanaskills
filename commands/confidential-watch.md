@@ -15,7 +15,9 @@ Stand up and run `ConfidentialComplianceLoop` for a given mint.
 ## Steps
 1. Load `skill/compliance-loop.md` and `skill/integration-helius.md`.
 2. Build `observe()` for the mint (poll signatures or drain the Helius queue).
-3. Construct `SplAuditorDecryptor` from the HSM key ref (never inline the key).
+3. Construct `SplAuditorDecryptor` from the HSM key ref (never inline the key),
+   with `parseAuditorCiphertext: splAuditorCiphertextParser(DEFAULT_LIMBS.limbs)`
+   to map the on-chain `commitment||handle` layout into the engine (CT09).
 4. Construct `ComplianceEngine(defaultConfig(decimals))`; apply the tuned
    thresholds + sanctions list from policy.
 5. Construct `BudgetLedger` with run-window caps + circuit breaker.
