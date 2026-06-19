@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lib
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install deps
+        run: bun install
+      - name: Typecheck
+        run: bunx tsc --noEmit
+      - name: Test (incl. real twisted-ElGamal crypto round-trips)
+        run: bun test
+      - name: End-to-end demo
+        run: bun run demo

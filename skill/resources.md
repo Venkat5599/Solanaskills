@@ -1,0 +1,31 @@
+# Resources
+
+## Official Solana / Token-2022
+
+- Confidential Transfer extension overview — https://solana.com/docs/tokens/extensions/confidential-transfer
+- Confidential Balances (solana-program docs) — https://www.solana-program.com/docs/confidential-balances
+- Transfer / Deposit / Withdraw guides — https://solana.com/docs/tokens/extensions/confidential-transfer/transfer-tokens
+- SPL confidential-token quickstart — https://spl.solana.com/confidential-token/quickstart
+- Kit's existing CT reference (sending) — solana-foundation/solana-dev-skill → `skill/references/confidential-transfers.md`
+
+## SDKs
+
+- `@solana/spl-token` — Token-2022 + confidential-transfer instruction builders
+- `@solana/zk-sdk` / `solana-zk-token-sdk` — ElGamal keys, ciphertexts, proofs, DLOG
+- `@solana/web3.js` — RPC, transactions
+
+## Guides
+
+- QuickNode: Confidential Transfers developer guide — https://www.quicknode.com/guides/solana-development/spl-tokens/token-2022/confidential
+- QuickNode: Confidential Balances are live — https://blog.quicknode.com/confidential-balance-token-extensions-on-solana/
+
+## Status
+
+- ZK ElGamal program is audit-paused on mainnet/devnet (2026). Develop on a local
+  validator with the program enabled, or with `MockAuditorDecryptor`. Re-check the
+  solana-program docs for the re-enable date before going to mainnet.
+
+## This skill's code
+
+- Engine + loop: `../lib/src` — pure AML engine, state, budgets, reporting, loop.
+- Tests: `../lib/test` — `bun test` (22 passing). Rules are unit-tested offline.
