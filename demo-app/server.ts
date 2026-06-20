@@ -113,6 +113,7 @@ async function chat(history: Turn[]): Promise<{ reply: string; trace: string[] }
 
 const server = Bun.serve({
   port: PORT,
+  hostname: process.env.HOST ?? "0.0.0.0", // reachable on the VPS, not just localhost
   async fetch(req) {
     const url = new URL(req.url);
     if (url.pathname === "/" || url.pathname === "/index.html") {

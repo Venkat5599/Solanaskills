@@ -1,0 +1,21 @@
+# Reverse-proxy port 80 (or 443 with TLS) to the demo on 127.0.0.1:8787.
+# Put a real server_name in, then:
+#   sudo cp deploy/nginx.conf.example /etc/nginx/sites-available/sol-confidential
+#   sudo ln -s /etc/nginx/sites-available/sol-confidential /etc/nginx/sites-enabled/
+#   sudo nginx -t && sudo systemctl reload nginx
+# For HTTPS:  sudo certbot --nginx -d your-domain.example
+
+server {
+    listen 80;
+    server_name _;   # replace with your domain, e.g. demo.example.com
+
+    location / {
+        proxy_pass http://127.0.0.1:8787;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;   # tool runs + model latency
+    }
+}
