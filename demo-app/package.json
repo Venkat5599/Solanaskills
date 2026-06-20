@@ -1,0 +1,14 @@
+{
+  "name": "solana-confidential-demo",
+  "version": "0.1.0",
+  "description": "Live chatbox demo: a Claude agent that consumes solana-confidential-skill and runs its real compliance engine.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "bun run server.ts",
+    "dev": "bun --watch server.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.0"
+  }
+}

@@ -18,6 +18,11 @@ cd lib && bun install && bun run demo   # watch real ElGamal ciphertext get
                                         # decrypted + scored, end to end
 ```
 
+**Or chat with it live** — a Claude agent that consumes this skill and runs its real engine
+(`demo-app/`): ask it to "run the compliance demo" and watch it generate an auditor key, encrypt a
+transfer stream, *actually decrypt it*, and return flags + a hashed report. No install of the skill,
+no localnet. See [`demo-app/`](./demo-app).
+
 ---
 
 ## The problem it solves (ecosystem-level)
@@ -130,6 +135,7 @@ solana-confidential-skill/
 ├── lib/                    # runnable TS core + tests (bun test → 27 passing)
 │   └── src/crypto/         # real twisted-ElGamal + BSGS discrete log
 ├── examples/demo.ts        # end-to-end runnable demo (bun run demo)
+├── demo-app/               # live chat: a Claude agent that runs the skill's engine
 ├── .github/workflows/ci.yml
 ├── install.sh  install-custom.sh
 └── LICENSE                 # MIT
