@@ -9,6 +9,6 @@
     "dev": "bun --watch server.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.71.0"
+    "openai": "^4.77.0"
   }
 }

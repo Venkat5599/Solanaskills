@@ -18,14 +18,18 @@ of the skill and no localnet.
 ## Architecture
 
 ```
- browser chat  ──►  Bun server (server.ts)  ──►  Claude (claude-opus-4-8, tool-use loop)
+ browser chat  ──►  Bun server (server.ts)  ──►  DeepSeek V4 Flash
+                          │                       (AICredits OpenAI-compatible gateway, tool-calling loop)
                           │                              │ tool calls
                           │                              ▼
                           │                       tools.ts ──► ../lib  (real compliance engine)
                           │                                └─► rag.ts  (retrieval over ../skill/*.md)
                           ▼
-                   public/index.html  (self-contained UI)
+                   public/index.html  (self-contained UI, ART+TECH editorial style)
 ```
+
+Model-agnostic by design: the agent talks OpenAI-compatible chat-completions, so any
+gateway works. Default is **DeepSeek V4 Flash via AICredits**; swap with env vars.
 
 Agent tools:
 | Tool | Runs |
@@ -39,12 +43,22 @@ Agent tools:
 ```bash
 cd demo-app
 bun install
-ANTHROPIC_API_KEY=sk-ant-... bun run server.ts
+echo 'AICREDITS_API_KEY=sk-live-...' > .env   # gitignored
+echo 'MODEL=deepseek/deepseek-v4-flash'      >> .env
+bun run server.ts
 # open http://localhost:8787
 ```
 
-The UI loads and `/api/health` works without a key; the chat loop needs `ANTHROPIC_API_KEY`
-(uses the official `@anthropic-ai/sdk`, model `claude-opus-4-8`). Set `PORT` to override 8787.
+The UI loads and `/api/health` works without a key; the chat loop needs `AICREDITS_API_KEY`.
+Uses the `openai` SDK pointed at the AICredits gateway (`https://api.aicredits.in/v1`).
+
+| Env var | Default | Purpose |
+|---|---|---|
+| `AICREDITS_API_KEY` | — | gateway key (`sk-live-…`). **Keep it in `.env` (gitignored) — never commit.** |
+| `MODEL` | `deepseek/deepseek-v4-flash` | any model the gateway serves |
+| `MODEL_FALLBACK` | `deepseek/deepseek-chat` | auto-retry id if the primary is rejected (`none` to disable) |
+| `AICREDITS_BASE_URL` | `https://api.aicredits.in/v1` | any OpenAI-compatible gateway |
+| `PORT` | `8787` | server port |
 
 ## Try
 

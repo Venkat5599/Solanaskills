@@ -1,20 +1,26 @@
 /**
- * Bun server: a Claude agent that consumes solana-confidential-skill.
+ * Bun server: an agent that consumes solana-confidential-skill, powered by
+ * DeepSeek V4 Flash via the AICredits OpenAI-compatible gateway.
  *
  * The agent's system prompt is the skill's SKILL.md routing. Its tools execute
  * the skill's real engine (encrypt → decrypt → AML → hashed report) and retrieve
  * the skill's own docs (RAG). Judges chat with it and watch the skill actually
  * run — no install, no localnet.
  *
- *   ANTHROPIC_API_KEY=sk-... bun run server.ts
+ *   AICREDITS_API_KEY=sk-live-... bun run server.ts
+ * (or put it in demo-app/.env — gitignored — and just `bun run server.ts`)
  */
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { toolDefs, runTool } from "./tools.ts";
 
 const PORT = Number(process.env.PORT ?? 8787);
-const MODEL = "claude-opus-4-8";
+const BASE_URL = process.env.AICREDITS_BASE_URL ?? "https://api.aicredits.in/v1";
+const MODEL = process.env.MODEL ?? "deepseek/deepseek-v4-flash";
+// Fallback if the gateway doesn't recognize the V4 Flash id (it confirms
+// deepseek/deepseek-chat in its docs). Override with MODEL_FALLBACK=none to disable.
+const MODEL_FALLBACK = process.env.MODEL_FALLBACK ?? "deepseek/deepseek-chat";
 const SKILL_MD = readFileSync(join(import.meta.dir, "..", "skill", "SKILL.md"), "utf8");
 const INDEX = readFileSync(join(import.meta.dir, "public", "index.html"), "utf8");
 
@@ -36,56 +42,71 @@ The skill's entry point (SKILL.md) for reference:
 ${SKILL_MD.slice(0, 6000)}
 ---`;
 
-let client: Anthropic | null = null;
-function getClient(): Anthropic {
+// Convert the skill's tool defs (Anthropic-style input_schema) to OpenAI
+// function-calling format that DeepSeek understands.
+const OPENAI_TOOLS = toolDefs.map((t) => ({
+  type: "function" as const,
+  function: { name: t.name, description: t.description, parameters: t.input_schema as any },
+}));
+
+let client: OpenAI | null = null;
+function getClient(): OpenAI {
   if (!client) {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) throw new Error("ANTHROPIC_API_KEY not set");
-    client = new Anthropic({ apiKey });
+    const apiKey = process.env.AICREDITS_API_KEY ?? process.env.OPENAI_API_KEY;
+    if (!apiKey) throw new Error("AICREDITS_API_KEY not set");
+    client = new OpenAI({ apiKey, baseURL: BASE_URL });
   }
   return client;
 }
 
 interface Turn {
   role: "user" | "assistant";
-  content: any;
+  content: string;
 }
 
 async function chat(history: Turn[]): Promise<{ reply: string; trace: string[] }> {
-  const anthropic = getClient();
-  const messages = history.map((t) => ({ role: t.role, content: t.content }));
+  const ai = getClient();
+  const messages: any[] = [
+    { role: "system", content: SYSTEM },
+    ...history.map((t) => ({ role: t.role, content: t.content })),
+  ];
   const trace: string[] = [];
+  let model = MODEL;
 
   for (let i = 0; i < 6; i++) {
-    const res = await anthropic.messages.create({
-      model: MODEL,
-      max_tokens: 1500,
-      system: SYSTEM,
-      tools: toolDefs as any,
-      messages,
-    });
-
-    if (res.stop_reason === "tool_use") {
-      messages.push({ role: "assistant", content: res.content });
-      const results: any[] = [];
-      for (const block of res.content) {
-        if (block.type === "tool_use") {
-          trace.push(`🔧 ${block.name}(${JSON.stringify(block.input)})`);
-          let out: string;
-          try {
-            out = await runTool(block.name, block.input);
-          } catch (e) {
-            out = `Tool error: ${(e as Error).message}`;
-          }
-          results.push({ type: "tool_result", tool_use_id: block.id, content: out });
-        }
+    let res;
+    try {
+      res = await ai.chat.completions.create({ model, max_tokens: 1500, messages, tools: OPENAI_TOOLS });
+    } catch (e) {
+      const m = (e as Error).message ?? "";
+      // Unknown-model error → retry once on the fallback id.
+      if (model === MODEL && MODEL_FALLBACK !== "none" && /model|not found|404|does not exist/i.test(m)) {
+        trace.push(`⚠️ model "${model}" rejected — retrying as "${MODEL_FALLBACK}"`);
+        model = MODEL_FALLBACK;
+        res = await ai.chat.completions.create({ model, max_tokens: 1500, messages, tools: OPENAI_TOOLS });
+      } else {
+        throw e;
       }
-      messages.push({ role: "user", content: results });
+    }
+    const msg = res.choices[0]?.message;
+    if (!msg) return { reply: "(empty response)", trace };
+
+    if (msg.tool_calls && msg.tool_calls.length > 0) {
+      messages.push(msg);
+      for (const call of msg.tool_calls) {
+        const name = call.function.name;
+        let args: any = {};
+        try { args = JSON.parse(call.function.arguments || "{}"); } catch {}
+        trace.push(`🔧 ${name}(${JSON.stringify(args)})`);
+        let out: string;
+        try { out = await runTool(name, args); }
+        catch (e) { out = `Tool error: ${(e as Error).message}`; }
+        messages.push({ role: "tool", tool_call_id: call.id, content: out });
+      }
       continue;
     }
 
-    const text = res.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("");
-    return { reply: text || "(no text)", trace };
+    return { reply: msg.content ?? "(no text)", trace };
   }
   return { reply: "Stopped after too many tool iterations.", trace };
 }
@@ -98,7 +119,12 @@ const server = Bun.serve({
       return new Response(INDEX, { headers: { "content-type": "text/html; charset=utf-8" } });
     }
     if (url.pathname === "/api/health") {
-      return Response.json({ ok: true, model: MODEL, keySet: Boolean(process.env.ANTHROPIC_API_KEY) });
+      return Response.json({
+        ok: true,
+        model: MODEL,
+        provider: "aicredits",
+        keySet: Boolean(process.env.AICREDITS_API_KEY ?? process.env.OPENAI_API_KEY),
+      });
     }
     if (url.pathname === "/api/chat" && req.method === "POST") {
       try {
@@ -115,4 +141,4 @@ const server = Bun.serve({
 
 console.log(`\n  solana-confidential-skill — live demo`);
 console.log(`  http://localhost:${server.port}`);
-console.log(`  model: ${MODEL}  |  key set: ${Boolean(process.env.ANTHROPIC_API_KEY)}\n`);
+console.log(`  model: ${MODEL} via ${BASE_URL}  |  key set: ${Boolean(process.env.AICREDITS_API_KEY ?? process.env.OPENAI_API_KEY)}\n`);
