@@ -9,9 +9,8 @@
  */
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { toolDefs, runTool } from "@/tools";
+import { SKILL_MD } from "@/app/skill-data.generated";
 
 // node:fs + the skill engine require the Node.js runtime; never static.
 export const runtime = "nodejs";
@@ -22,7 +21,6 @@ const MODEL = process.env.MODEL ?? "deepseek/deepseek-v4-flash";
 // Fallback if the gateway doesn't recognize the V4 Flash id (it confirms
 // deepseek/deepseek-chat in its docs). Override with MODEL_FALLBACK=none to disable.
 const MODEL_FALLBACK = process.env.MODEL_FALLBACK ?? "deepseek/deepseek-chat";
-const SKILL_MD = readFileSync(join(process.cwd(), "..", "skill", "SKILL.md"), "utf8");
 
 const SYSTEM = `You are the live assistant for **solana-confidential-skill** — the auditor-side compliance & AML layer for Solana Token-2022 Confidential Transfers. You are demonstrating the skill to hackathon judges.
 

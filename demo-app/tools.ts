@@ -9,11 +9,10 @@ import {
   ConfidentialComplianceLoop, type ConfidentialTransferRecord, type Flag,
 } from "../lib/src/index";
 import { buildCorpus, retrieve } from "./rag";
-import { join } from "node:path";
+import { SKILL_DOCS } from "./app/skill-data.generated";
 
-// cwd is the demo-app dir at runtime; the skill modules live one level up.
-const SKILL_DIR = join(process.cwd(), "..", "skill");
-const corpus = buildCorpus(SKILL_DIR);
+// Docs are inlined at build time (no runtime ../skill read — Vercel-safe).
+const corpus = buildCorpus(SKILL_DOCS);
 
 const unit = 1_000_000n; // 6 decimals
 

@@ -5,9 +5,6 @@
  * the actual skill text instead of the model's prior — real RAG, no embeddings
  * service required so the demo runs anywhere.
  */
-import { readdirSync, readFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
-
 export interface Chunk {
   source: string;
   heading: string;
@@ -32,13 +29,15 @@ function termFreq(text: string): Map<string, number> {
   return m;
 }
 
-/** Build the corpus from the skill/ directory (SKILL.md + routed modules). */
-export function buildCorpus(skillDir: string): Chunk[] {
+/**
+ * Build the corpus from the skill's markdown modules. Docs are passed in as
+ * `{ file, text }` pairs (bundled at build time via app/skill-data.generated.ts)
+ * so the deployed function has no runtime filesystem dependency on ../skill.
+ */
+export function buildCorpus(docs: { file: string; text: string }[]): Chunk[] {
   const chunks: Chunk[] = [];
-  if (!existsSync(skillDir)) return chunks;
-  for (const file of readdirSync(skillDir)) {
+  for (const { file, text: raw } of docs) {
     if (!file.endsWith(".md")) continue;
-    const raw = readFileSync(join(skillDir, file), "utf8");
     // Split on H2/H3 headings, keeping the heading with its body.
     const parts = raw.split(/\n(?=#{1,3}\s)/);
     for (const part of parts) {

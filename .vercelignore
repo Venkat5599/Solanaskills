@@ -1,0 +1,6 @@
+# Never ship secrets or build artifacts to the Vercel build context.
+**/.env
+**/.env.*
+**/node_modules
+**/.next
+.git

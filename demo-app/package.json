@@ -6,12 +6,17 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "gen": "bun run scripts/gen-skill-data.ts",
+    "predev": "bun run gen",
     "dev": "next dev -p 8787",
+    "prebuild": "bun run gen",
     "build": "next build",
     "start": "next start -p 8787 -H 0.0.0.0",
     "lint": "next lint"
   },
   "dependencies": {
+    "@noble/curves": "^2.2.0",
+    "@noble/hashes": "^2.2.0",
     "next": "^15.1.3",
     "openai": "^4.77.0",
     "react": "^19.0.0",

@@ -1,0 +1,9 @@
+{
+  "name": "solana-confidential-skill-deploy-root",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Deploy shim so Vercel detects the Next.js demo that lives in demo-app/. The real app + deps are in demo-app/package.json.",
+  "dependencies": {
+    "next": "^15.1.3"
+  }
+}
