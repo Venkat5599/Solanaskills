@@ -77,7 +77,11 @@ export default function AgentConsole() {
       if (!text.trim() || busy) return;
       setBusy(true);
       historyRef.current.push({ role: "user", content: text });
-      setMessages((m) => [...m, { role: "you", html: render(text) }, { role: "da", html: "…" }]);
+      setMessages((m) => [
+        ...m,
+        { role: "you", html: render(text) },
+        { role: "da", html: `<span class="dots"><i></i><i></i><i></i></span>` },
+      ]);
       if (inputRef.current) {
         inputRef.current.value = "";
         inputRef.current.style.height = "auto";

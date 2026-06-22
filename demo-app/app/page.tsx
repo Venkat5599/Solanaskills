@@ -3,6 +3,20 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { Reveal, MaskLines, Stagger, StaggerItem } from "./components/motion";
+import { ScrollProgress, Marquee } from "./components/chrome";
+
+const TICKER = [
+  "Token-2022",
+  "Confidential Transfers",
+  "twisted-ElGamal",
+  "Ristretto255",
+  "Auditor key",
+  "AML engine",
+  "Structuring",
+  "Sanctions",
+  "Layering",
+  "SHA-256 reports",
+];
 
 const RULES = [
   ["Sanctioned", "OFAC / denylisted counterparty"],
@@ -25,6 +39,7 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 export default function Page() {
   return (
     <>
+      <ScrollProgress />
       <div className="wrap">
         <motion.nav
           className="nav"
@@ -61,32 +76,60 @@ export default function Page() {
             <MaskLines lines={["Compliance", "without", "surveillance."]} lineClassName="line" />
           </h1>
 
-          <motion.p
-            className="strap"
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.55, ease: EASE }}
-          >
-            The auditor-side AML engine for Solana Token-2022 Confidential Transfers. Confidential
-            Transfers encrypt amounts on-chain — exactly what regulated payments need, and exactly
-            what blocks them. This skill operates the one key that opens it.&nbsp;
-            <span className="tick" />
-          </motion.p>
+          <div className="hero-band">
+            <div className="hero-left">
+              <motion.p
+                className="strap"
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.55, ease: EASE }}
+              >
+                The auditor-side AML engine for Solana Token-2022 Confidential Transfers. Confidential
+                Transfers encrypt amounts on-chain — exactly what regulated payments need, and exactly
+                what blocks them. This skill operates the one key that opens it.&nbsp;
+                <span className="tick" />
+              </motion.p>
 
-          <motion.div
-            className="cta-row"
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.7, ease: EASE }}
-          >
-            <Link className="cta" href="/dashboard">
-              Open the console →
-            </Link>
-            <a className="ghost lg" href="https://github.com/Venkat5599/Solanaskills" target="_blank" rel="noreferrer">
-              Read the source
-            </a>
-          </motion.div>
+              <motion.div
+                className="cta-row"
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.7, ease: EASE }}
+              >
+                <Link className="cta" href="/dashboard">
+                  Open the console →
+                </Link>
+                <a className="ghost lg" href="https://github.com/Venkat5599/Solanaskills" target="_blank" rel="noreferrer">
+                  Read the source
+                </a>
+              </motion.div>
+            </div>
+
+            <motion.aside
+              className="spec-tile"
+              initial={{ opacity: 0, y: 32 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.85, ease: EASE }}
+            >
+              <div className="spec-top">
+                <span>Auditor key</span>
+                <span className="spec-live">
+                  <span className="dot" />live
+                </span>
+              </div>
+              <div className="spec-big">30/0</div>
+              <div className="spec-sub">tests passing · zero failing</div>
+              <dl className="spec-list">
+                <div><dt>Group</dt><dd>Ristretto255</dd></div>
+                <div><dt>Scheme</dt><dd>twisted-ElGamal</dd></div>
+                <div><dt>Decrypt</dt><dd>BSGS discrete log</dd></div>
+              </dl>
+              <div className="spec-hash">report · 182bc087…86c1cd14</div>
+            </motion.aside>
+          </div>
         </header>
+
+        <Marquee items={TICKER} />
 
         <section className="intro">
           <Reveal>
