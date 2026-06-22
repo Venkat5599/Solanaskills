@@ -3,22 +3,11 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { Reveal, MaskLines, Stagger, StaggerItem } from "./components/motion";
-import { ScrollProgress, Marquee } from "./components/chrome";
+import { ScrollProgress } from "./components/chrome";
 
-const TICKER = [
-  "Token-2022",
-  "Confidential Transfers",
-  "twisted-ElGamal",
-  "Ristretto255",
-  "Auditor key",
-  "AML engine",
-  "Structuring",
-  "Sanctions",
-  "Layering",
-  "SHA-256 reports",
-];
+const EASE = [0.22, 1, 0.36, 1] as const;
 
-const RULES = [
+const CAPS: [string, string][] = [
   ["Sanctioned", "OFAC / denylisted counterparty"],
   ["Structuring", "a big payment split into sub-threshold pieces"],
   ["Velocity", "bursts beyond a per-window limit"],
@@ -27,192 +16,216 @@ const RULES = [
   ["Dormancy", "long-idle account suddenly moves funds"],
 ];
 
-const STEPS = [
-  ["Observe", "Pull confidential transfers for one mint — oldest first."],
-  ["Decrypt", "The auditor ElGamal key recovers the amount. No account keys touched."],
-  ["Assess", "Deterministic AML rules score each decrypted amount against rolling state."],
-  ["Report", "Flags page out; a SHA-256 hashed, append-only report is emitted."],
+const SPECS: [string, string][] = [
+  ["Group", "Ristretto255"],
+  ["Scheme", "twisted-ElGamal"],
+  ["Decrypt", "BSGS discrete log"],
+  ["Reports", "SHA-256 append-only"],
+  ["Tests", "30 passing / 0 failing"],
+  ["Runtime", "deterministic loop"],
 ];
 
-const EASE = [0.22, 1, 0.36, 1] as const;
+const TIMELINE: [string, string, string][] = [
+  ["01", "Observe", "Pull confidential transfers for one mint — oldest first."],
+  ["02", "Decrypt", "The auditor ElGamal key recovers the amount. No account keys touched."],
+  ["03", "Assess", "Deterministic AML rules score each amount against rolling state."],
+  ["04", "Report", "Flags page out; a SHA-256 hashed, append-only report is emitted."],
+];
+
+function Loaders() {
+  return (
+    <div className="loaders" aria-hidden>
+      <span className="braille b1">⣿⣿⣿⣿⣿⣿⣿</span>
+      <span className="braille b2">⣿⣿⣿⣿</span>
+    </div>
+  );
+}
+
+function SectionHead({ idx, kicker, title }: { idx: string; kicker: string; title: string }) {
+  return (
+    <div className="ahead">
+      <div className="ahead-row">
+        <span className="tri" aria-hidden>▶</span>
+        <h2 className="ahead-title">
+          <span className="mono kicker">{kicker}</span>
+          <span className="bar">|</span>
+          {title}
+          <span className="neg">¬</span>
+        </h2>
+        <span className="ahead-no mono">{idx}</span>
+      </div>
+    </div>
+  );
+}
 
 export default function Page() {
   return (
-    <>
+    <div className="aptos">
       <ScrollProgress />
-      <div className="wrap">
-        <motion.nav
-          className="nav"
+
+      <div className="awrap">
+        <motion.header
+          className="atop"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, ease: EASE }}
         >
-          <div className="wordmark">
-            Confidential<span className="green">Audit</span>
+          <div className="brandline mono">
+            <span className="tri" aria-hidden>▶</span>
+            Confidential<span className="teal">Audit</span>
+            <span className="ver">v1.01</span>
           </div>
-          <div className="right">
-            <a className="ghost" href="https://github.com/Venkat5599/Solanaskills" target="_blank" rel="noreferrer">
+          <div className="atop-right mono">
+            <a href="https://github.com/Venkat5599/Solanaskills" target="_blank" rel="noreferrer" className="brk">
               GitHub
             </a>
-            <Link className="ghost" href="/dashboard">
+            <Link href="/dashboard" className="brk">
               Console
             </Link>
-            <span className="mark">||</span>
           </div>
-        </motion.nav>
+        </motion.header>
 
-        <header className="hero">
-          <motion.div
-            className="meta"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: EASE }}
-          >
-            <span className="lab">2026 Edition</span>
-            <span className="lab">solana-confidential-skill · live agent</span>
-          </motion.div>
+        {/* 00 — hero */}
+        <section className="ahero acc-teal">
+          <div className="ahero-top mono">
+            <span>00</span>
+            <span>Start now</span>
+            <Loaders />
+          </div>
 
-          <h1 className="display">
-            <MaskLines lines={["Compliance", "without", "surveillance."]} lineClassName="line" />
+          <h1 className="adisplay">
+            <MaskLines lines={["Compliance", "without", "surveillance."]} lineClassName="aline" />
           </h1>
 
-          <div className="hero-band">
-            <div className="hero-left">
-              <motion.p
-                className="strap"
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.55, ease: EASE }}
-              >
-                The auditor-side AML engine for Solana Token-2022 Confidential Transfers. Confidential
-                Transfers encrypt amounts on-chain — exactly what regulated payments need, and exactly
-                what blocks them. This skill operates the one key that opens it.&nbsp;
-                <span className="tick" />
-              </motion.p>
-
-              <motion.div
-                className="cta-row"
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.7, ease: EASE }}
-              >
-                <Link className="cta" href="/dashboard">
-                  Open the console →
-                </Link>
-                <a className="ghost lg" href="https://github.com/Venkat5599/Solanaskills" target="_blank" rel="noreferrer">
-                  Read the source
-                </a>
-              </motion.div>
-            </div>
-
-            <motion.aside
-              className="spec-tile"
-              initial={{ opacity: 0, y: 32 }}
+          <div className="ahero-band">
+            <motion.p
+              className=" alead"
+              initial={{ opacity: 0, y: 22 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.85, ease: EASE }}
+              transition={{ duration: 0.7, delay: 0.5, ease: EASE }}
             >
-              <div className="spec-top">
-                <span>Auditor key</span>
-                <span className="spec-live">
-                  <span className="dot" />live
-                </span>
-              </div>
-              <div className="spec-big">30/0</div>
-              <div className="spec-sub">tests passing · zero failing</div>
-              <dl className="spec-list">
-                <div><dt>Group</dt><dd>Ristretto255</dd></div>
-                <div><dt>Scheme</dt><dd>twisted-ElGamal</dd></div>
-                <div><dt>Decrypt</dt><dd>BSGS discrete log</dd></div>
-              </dl>
-              <div className="spec-hash">report · 182bc087…86c1cd14</div>
-            </motion.aside>
+              The auditor-side AML engine for Solana Token-2022 Confidential Transfers. Encrypted
+              amounts on-chain are exactly what regulated payments need — and exactly what blocks
+              them. This skill operates the one key that opens it.
+            </motion.p>
+            <motion.div
+              className=" acta mono"
+              initial={{ opacity: 0, y: 22 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.65, ease: EASE }}
+            >
+              <Link href="/dashboard" className="brk brk-fill">
+                Open the console
+              </Link>
+              <a href="https://github.com/Venkat5599/Solanaskills" target="_blank" rel="noreferrer" className="brk">
+                Read the source
+              </a>
+            </motion.div>
           </div>
-        </header>
+        </section>
 
-        <Marquee items={TICKER} />
+        {/* scroll ticker */}
+        <div className="scrollband mono" aria-hidden>
+          <div className="scrollband-track">
+            {Array.from({ length: 16 }).map((_, i) => (
+              <span key={i}>▽ Scroll ▽</span>
+            ))}
+          </div>
+        </div>
 
-        <section className="intro">
+        {/* 01 — about */}
+        <section className="asec acc-pink">
+          <SectionHead idx="01" kicker="About" title="Who we are" />
           <Reveal>
-            <span className="lab">Introduction</span>
-          </Reveal>
-          <Reveal delay={0.08}>
-            <div className="body">
+            <p className="abody">
               Not a chatbot about docs — the agent&apos;s tools <b>are</b> the skill. Real
               twisted-ElGamal over Ristretto255, baby-step-giant-step discrete log, an AML rule
               engine, and SHA-256 hashed reporting. The auditor key decrypts one mint, inside one
               trust boundary, for one lawful purpose. Privacy stays the default for everyone else —
               by cryptography, not by policy.
-            </div>
+            </p>
           </Reveal>
         </section>
 
-        <section className="sec">
-          <div className="shead">
-            <span className="no">01</span>
-            <Reveal>
-              <h2>How it runs</h2>
-            </Reveal>
-          </div>
-          <Stagger className="steps">
-            {STEPS.map(([t, d], i) => (
-              <StaggerItem className="step" key={i}>
-                <span className="step-no lab">{String(i + 1).padStart(2, "0")}</span>
-                <span className="step-t">{t}</span>
-                <span className="step-d">{d}</span>
+        {/* 02 — capabilities */}
+        <section className="asec acc-coral">
+          <SectionHead idx="02" kicker="Detection" title="What only the auditor can see" />
+          <Stagger className="caps" step={0.06}>
+            {CAPS.map(([t, d], i) => (
+              <StaggerItem className="cap" key={i}>
+                <span className="cap-no mono">{String(i + 1).padStart(2, "0")}</span>
+                <span className="cap-t">{t}</span>
+                <span className="cap-d">{d}</span>
+                <span className="cap-arrow mono">→</span>
               </StaggerItem>
             ))}
           </Stagger>
-        </section>
-
-        <section className="sec">
-          <div className="shead">
-            <span className="no">02</span>
-            <Reveal>
-              <h2>What only the auditor can see</h2>
-            </Reveal>
-            <span className="tick stat" />
-          </div>
-          <Stagger className="rules" step={0.06}>
-            {RULES.map(([t, d], i) => (
-              <StaggerItem className="rule" key={i}>
-                <span className="rule-t">{t}</span>
-                <span className="rule-d">{d}</span>
-              </StaggerItem>
-            ))}
-          </Stagger>
-        </section>
-
-        <section className="closer">
-          <Reveal>
-            <h2 className="closer-h">See it really run.</h2>
-          </Reveal>
-          <Reveal delay={0.12}>
-            <Link className="cta" href="/dashboard">
-              Open the console →
+          <Reveal className="caps-cta">
+            <Link href="/dashboard" className="brk brk-fill mono">
+              Run a scenario
             </Link>
           </Reveal>
         </section>
-      </div>
 
-      <footer>
-        <div className="fwrap">
-          <div className="cols">
+        {/* 03 — engine specs */}
+        <section className="asec acc-teal">
+          <SectionHead idx="03" kicker="Engine" title="Built on real cryptography" />
+          <Stagger className="specs" step={0.05}>
+            {SPECS.map(([k, v], i) => (
+              <StaggerItem className="spec" key={i}>
+                <span className="spec-k mono">{k}</span>
+                <span className="spec-v">{v}</span>
+              </StaggerItem>
+            ))}
+          </Stagger>
+        </section>
+
+        {/* 04 — timeline */}
+        <section className="asec acc-peach">
+          <SectionHead idx="04" kicker="Timeline" title="How it runs" />
+          <div className="tl">
+            {TIMELINE.map(([n, t, d], i) => (
+              <Reveal key={i} delay={i * 0.05}>
+                <div className="tl-row">
+                  <span className="tl-no mono">{n}</span>
+                  <span className="tl-t">{t}</span>
+                  <span className="tl-d">{d}</span>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+
+        {/* closer */}
+        <section className="acloser acc-pink">
+          <Reveal>
+            <h2 className="acloser-h">See it really run.</h2>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <Link href="/dashboard" className="brk brk-fill brk-lg mono">
+              Open the console
+            </Link>
+          </Reveal>
+        </section>
+
+        <footer className="afoot mono">
+          <div className="afoot-cols">
             <div>
-              <h4>Engine</h4>
-              <p>twisted-ElGamal · Ristretto255 · baby-step-giant-step DLOG · 30 tests passing</p>
+              <span className="afoot-k">Engine</span>
+              <p>twisted-ElGamal · Ristretto255 · BSGS DLOG · 30 tests</p>
             </div>
             <div>
-              <h4>Model</h4>
-              <p>tool-use loop · BM25 retrieval over the skill&apos;s own modules</p>
+              <span className="afoot-k">Model</span>
+              <p>tool-use loop · BM25 retrieval over the skill</p>
             </div>
             <div>
-              <h4>License</h4>
+              <span className="afoot-k">License</span>
               <p>MIT · built for the Solana AI Kit</p>
             </div>
           </div>
-          <div className="cc">© 2026 · SOLANA-CONFIDENTIAL-SKILL · #WEARESTILLEARLY</div>
-        </div>
-      </footer>
-    </>
+          <div className="afoot-cc">© 2026 — SOLANA-CONFIDENTIAL-SKILL — v1.01</div>
+        </footer>
+      </div>
+    </div>
   );
 }

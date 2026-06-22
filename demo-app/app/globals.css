@@ -334,3 +334,137 @@ footer .cc { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 
 .empty-sub { font-size: 16px; line-height: 1.5; color: var(--color-sage); margin: 0; }
 .stage form { padding: 16px 40px 22px; border-top: 1px solid var(--color-mist); flex-shrink: 0; }
 @media (max-width: 720px) { .stage form { padding: 16px 24px 22px; } }
+
+/* ===================================================================== */
+/* Aptos-Labs technical theme — scoped to the landing (.aptos) only       */
+/* ===================================================================== */
+.aptos {
+  --bg: #ffffff;
+  --ink: #0f0f0f;
+  --teal: #298479;
+  --pink: #d95b9a;
+  --coral: #ff7575;
+  --peach: #f0a35a;
+  --acc: var(--teal);          /* default accent; sections override per-block */
+  --mut: #6b6b6b;
+  --line: rgba(15, 15, 15, 0.13);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Archivo", -apple-system, system-ui, sans-serif;
+  min-height: 100vh;
+  letter-spacing: 0;
+}
+/* per-section accent rotation — Aptos's multi-hue punctuation */
+.aptos .acc-teal { --acc: var(--teal); }
+.aptos .acc-pink { --acc: var(--pink); }
+.aptos .acc-coral { --acc: var(--coral); }
+.aptos .acc-peach { --acc: var(--peach); }
+.aptos .mono { font-family: "JetBrains Mono", ui-monospace, Menlo, monospace; }
+.aptos .teal { color: var(--acc); }
+.aptos .tri { color: var(--acc); font-size: 0.62em; transform: translateY(-1px); }
+.aptos .scrollbar { background: var(--acc); }
+
+.awrap { max-width: 1320px; margin: 0 auto; padding: 0 40px; }
+@media (max-width: 720px) { .awrap { padding: 0 22px; } }
+
+/* top bar */
+.atop { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 40; background: rgba(255, 255, 255, 0.84); backdrop-filter: blur(8px); }
+.brandline { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; letter-spacing: 0.02em; }
+.brandline .ver { color: var(--mut); margin-left: 6px; font-size: 11px; }
+.atop-right { display: flex; gap: 22px; font-size: 12px; }
+
+/* bracket buttons */
+.brk { position: relative; display: inline-flex; align-items: center; text-transform: uppercase; font-size: 12px; letter-spacing: 0.08em; color: var(--ink); transition: color .2s, background .2s; cursor: pointer; }
+.brk::before { content: "["; margin-right: 0.7ch; color: var(--acc); transition: margin .25s cubic-bezier(.22,1,.36,1); }
+.brk::after { content: "]"; margin-left: 0.7ch; color: var(--acc); transition: margin .25s cubic-bezier(.22,1,.36,1); }
+.brk:hover { color: var(--acc); }
+.brk:hover::before { margin-right: 1.2ch; }
+.brk:hover::after { margin-left: 1.2ch; }
+.brk-fill { background: var(--acc); color: var(--ink); padding: 13px 18px; font-weight: 600; }
+.brk-fill::before, .brk-fill::after { color: var(--ink); }
+.brk-fill:hover { background: var(--ink); color: var(--bg); }
+.brk-fill:hover::before, .brk-fill:hover::after { color: var(--bg); margin-left: 0.7ch; margin-right: 0.7ch; }
+.brk-fill:hover::before { margin-right: 0.7ch; }
+.brk-lg { font-size: 14px; padding: 17px 24px; }
+
+/* hero */
+.ahero { padding: 56px 0 30px; }
+.ahero-top { display: flex; align-items: center; gap: 18px; font-size: 12px; color: var(--mut); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 28px; }
+.loaders { margin-left: auto; display: flex; gap: 14px; }
+.braille { font-size: 13px; letter-spacing: -1px; color: var(--ink); }
+.braille.b1 { animation: shimmer 2s infinite ease-in-out; }
+.braille.b2 { color: var(--acc); animation: shimmer 2s 0.5s infinite ease-in-out; }
+@keyframes shimmer { 0%, 100% { opacity: 0.32; } 50% { opacity: 1; } }
+
+.adisplay { font-family: "Archivo", sans-serif; font-weight: 700; font-size: clamp(54px, 13vw, 188px); line-height: 0.92; letter-spacing: -0.035em; margin: 0; }
+.aline { display: block; }
+
+.ahero-band { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: end; margin-top: 44px; }
+@media (max-width: 760px) { .ahero-band { grid-template-columns: 1fr; gap: 26px; } }
+.alead { font-size: 18px; line-height: 1.5; max-width: 520px; }
+.acta { display: flex; gap: 26px; align-items: center; flex-wrap: wrap; }
+@media (min-width: 761px) { .acta { justify-content: flex-end; } }
+
+/* scroll ticker */
+.scrollband { overflow: hidden; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 12px 0; margin-top: 44px; }
+.scrollband-track { display: inline-flex; white-space: nowrap; animation: marquee 26s linear infinite; }
+.scrollband-track span { padding-right: 40px; font-size: 12px; letter-spacing: 0.24em; color: var(--mut); }
+
+/* section */
+.asec { padding: 78px 0; border-top: 1px solid var(--line); }
+.ahead { margin-bottom: 38px; }
+.ahead-row { display: flex; align-items: baseline; gap: 14px; }
+.ahead-title { font-family: "Archivo", sans-serif; font-weight: 600; font-size: clamp(20px, 2.6vw, 30px); margin: 0; letter-spacing: -0.01em; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.ahead .kicker { font-size: 12px; color: var(--mut); text-transform: uppercase; letter-spacing: 0.08em; align-self: center; }
+.ahead .bar { color: var(--mut); font-weight: 400; }
+.ahead .neg { color: var(--acc); }
+.ahead-no { margin-left: auto; font-size: 13px; color: var(--mut); }
+
+.abody { font-size: clamp(20px, 2.3vw, 30px); line-height: 1.34; max-width: 920px; letter-spacing: -0.01em; }
+.abody b { font-weight: 600; }
+
+/* capabilities */
+.caps { display: flex; flex-direction: column; }
+.cap { display: grid; grid-template-columns: 48px 230px 1fr 30px; gap: 20px; align-items: baseline; padding: 22px 0; border-top: 1px solid var(--line); transition: padding-left .22s cubic-bezier(.22,1,.36,1); }
+.cap:hover { padding-left: 14px; }
+.cap:hover .cap-arrow { color: var(--acc); transform: translateX(4px); }
+.cap-no { font-size: 12px; color: var(--mut); }
+.cap-t { font-family: "Archivo", sans-serif; font-weight: 600; font-size: 22px; }
+.cap-d { color: var(--mut); font-size: 14px; }
+.cap-arrow { color: var(--line); text-align: right; transition: .2s; }
+@media (max-width: 720px) { .cap { grid-template-columns: 34px 1fr; } .cap-d { grid-column: 2; } .cap-arrow { display: none; } }
+.caps-cta { margin-top: 30px; }
+
+/* specs */
+.specs { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); }
+@media (max-width: 720px) { .specs { grid-template-columns: 1fr 1fr; } }
+.spec { display: flex; flex-direction: column; gap: 7px; padding: 24px 0; border-bottom: 1px solid var(--line); }
+.spec-k { font-size: 11px; color: var(--mut); text-transform: uppercase; letter-spacing: 0.08em; }
+.spec-v { font-family: "Archivo", sans-serif; font-weight: 600; font-size: 20px; }
+
+/* timeline */
+.tl { display: flex; flex-direction: column; }
+.tl-row { display: grid; grid-template-columns: 60px 200px 1fr; gap: 20px; align-items: baseline; padding: 22px 0; border-top: 1px solid var(--line); }
+@media (max-width: 720px) { .tl-row { grid-template-columns: 40px 1fr; } .tl-d { grid-column: 2; } }
+.tl-no { font-size: 13px; color: var(--acc); }
+.tl-t { font-family: "Archivo", sans-serif; font-weight: 600; font-size: 22px; }
+.tl-d { color: var(--mut); font-size: 14px; }
+
+/* closer */
+.acloser { padding: 130px 0 100px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 40px; border-top: 1px solid var(--line); }
+.acloser-h { font-family: "Archivo", sans-serif; font-weight: 700; font-size: clamp(48px, 11vw, 150px); line-height: 0.92; letter-spacing: -0.04em; margin: 0; }
+
+/* footer */
+.aptos .afoot { background: transparent; color: var(--ink); border-radius: 0; margin-top: 0; }
+.afoot { border-top: 1px solid var(--ink); padding: 42px 0 60px; }
+.afoot .afoot-k { color: var(--mut); }
+.afoot p { color: var(--ink); }
+.afoot-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+@media (max-width: 720px) { .afoot-cols { grid-template-columns: 1fr; gap: 18px; } }
+.afoot-k { font-size: 11px; color: var(--mut); text-transform: uppercase; letter-spacing: 0.08em; }
+.afoot p { margin: 6px 0 0; font-size: 12px; }
+.afoot-cc { margin-top: 34px; font-size: 11px; color: var(--mut); letter-spacing: 0.1em; }
+
+@media (prefers-reduced-motion: reduce) {
+  .scrollband-track, .braille.b1, .braille.b2 { animation: none; }
+}
