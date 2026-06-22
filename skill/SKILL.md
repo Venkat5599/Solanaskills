@@ -198,7 +198,7 @@ Dry-run the **entire** pipeline with no crypto and no network using
 
 `../lib` — TypeScript core. AML engine, rolling state, budget, reporting, loop,
 **and real twisted-ElGamal decryption** (Ristretto255 + baby-step-giant-step
-discrete log, via `@noble/curves`). `cd lib && bun test` → **27 passing**
+discrete log, via `@noble/curves`). `cd lib && bun test` → **30 passing**
 (incl. encrypt→decrypt round-trips across the full 48-bit range, semantic
 security, wrong-key-fails), `bunx tsc --noEmit` → **clean**.
 
