@@ -7,11 +7,12 @@ import {
   ComplianceEngine, BudgetLedger, defaultConfig,
   generateAuditorKeypair, encryptAmount, SplAuditorDecryptor,
   ConfidentialComplianceLoop, type ConfidentialTransferRecord, type Flag,
-} from "../lib/src/index.ts";
-import { buildCorpus, retrieve } from "./rag.ts";
+} from "../lib/src/index";
+import { buildCorpus, retrieve } from "./rag";
 import { join } from "node:path";
 
-const SKILL_DIR = join(import.meta.dir, "..", "skill");
+// cwd is the demo-app dir at runtime; the skill modules live one level up.
+const SKILL_DIR = join(process.cwd(), "..", "skill");
 const corpus = buildCorpus(SKILL_DIR);
 
 const unit = 1_000_000n; // 6 decimals
@@ -151,7 +152,9 @@ export async function runTool(name: string, input: any): Promise<string> {
       engine,
       budget: new BudgetLedger({ maxIterations: 4, maxConsecutiveErrors: 3 }),
       observe: async () => (served ? [] : ((served = true), records)),
-      onFlags: (f) => collected.push(...f),
+      onFlags: (f) => {
+        collected.push(...f);
+      },
       sleep: async () => {},
     });
     const report = await loop.run();

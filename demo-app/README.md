@@ -18,18 +18,21 @@ of the skill and no localnet.
 ## Architecture
 
 ```
- browser chat  ──►  Bun server (server.ts)  ──►  DeepSeek V4 Flash
-                          │                       (AICredits OpenAI-compatible gateway, tool-calling loop)
-                          │                              │ tool calls
-                          │                              ▼
-                          │                       tools.ts ──► ../lib  (real compliance engine)
-                          │                                └─► rag.ts  (retrieval over ../skill/*.md)
-                          ▼
-                   public/index.html  (self-contained UI, ART+TECH editorial style)
+ app/page.tsx (React UI)  ──►  app/api/chat/route.ts  ──►  DeepSeek V4 Flash
+   ART+TECH editorial style          │                     (AICredits OpenAI-compatible gateway, tool-calling loop)
+                                     │                            │ tool calls
+                                     │                            ▼
+                                     │                     tools.ts ──► ../lib  (real compliance engine)
+                                     │                              └─► rag.ts  (retrieval over ../skill/*.md)
+                                     ▼
+                              app/api/health/route.ts
 ```
 
-Model-agnostic by design: the agent talks OpenAI-compatible chat-completions, so any
-gateway works. Default is **DeepSeek V4 Flash via AICredits**; swap with env vars.
+Next.js 15 (App Router) on Bun. The UI is a React client component; the agent loop
+lives in a server route (`runtime = "nodejs"`) so it can run the skill's real engine
+from `../lib`. Model-agnostic by design: the agent talks OpenAI-compatible
+chat-completions, so any gateway works. Default is **DeepSeek V4 Flash via AICredits**;
+swap with env vars.
 
 Agent tools:
 | Tool | Runs |
@@ -45,8 +48,7 @@ cd demo-app
 bun install
 echo 'AICREDITS_API_KEY=sk-live-...' > .env   # gitignored
 echo 'MODEL=deepseek/deepseek-v4-flash'      >> .env
-bun run server.ts
-# open http://localhost:8787
+bun run dev          # http://localhost:8787  (or: bun run build && bun run start)
 ```
 
 The UI loads and `/api/health` works without a key; the chat loop needs `AICREDITS_API_KEY`.

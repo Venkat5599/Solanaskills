@@ -37,9 +37,12 @@ fi
 BUN_BIN="$(command -v bun)"
 echo "==> bun: $BUN_BIN ($($BUN_BIN --version))"
 
-# --- deps ---
+# --- deps + production build ---
 echo "==> installing deps"
 "$BUN_BIN" install
+
+echo "==> building Next.js app"
+"$BUN_BIN" run build
 
 # --- .env (only write if a key was passed; otherwise keep existing) ---
 if [ -n "${AICREDITS_API_KEY:-}" ]; then
@@ -67,7 +70,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 WorkingDirectory=${APP_DIR}
-ExecStart=${BUN_BIN} run server.ts
+ExecStart=${BUN_BIN} run start
 EnvironmentFile=${APP_DIR}/.env
 Restart=on-failure
 RestartSec=3
@@ -87,7 +90,7 @@ EOF
   curl -s "http://127.0.0.1:${PORT}/api/health" || echo "(not up yet — check: journalctl -u ${SERVICE} -n 50)"
   echo ""
 else
-  echo "!! systemctl not found — start manually:  cd $APP_DIR && bun run server.ts"
+  echo "!! systemctl not found — start manually:  cd $APP_DIR && bun run build && bun run start"
 fi
 
 echo ""
