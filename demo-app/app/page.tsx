@@ -98,28 +98,55 @@ export default function Page() {
           </h1>
 
           <div className="ahero-band">
-            <motion.p
-              className=" alead"
-              initial={{ opacity: 0, y: 22 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.5, ease: EASE }}
-            >
-              The auditor-side AML engine for Solana Token-2022 Confidential Transfers. Encrypted
-              amounts on-chain are exactly what regulated payments need — and exactly what blocks
-              them. This skill operates the one key that opens it.
-            </motion.p>
+            <div className="ahero-left">
+              <motion.p
+                className="alead"
+                initial={{ opacity: 0, y: 22 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.5, ease: EASE }}
+              >
+                The auditor-side AML engine for Solana Token-2022 Confidential Transfers. Encrypted
+                amounts on-chain are exactly what regulated payments need — and exactly what blocks
+                them. This skill operates the one key that opens it.
+              </motion.p>
+              <motion.div
+                className="acta mono"
+                initial={{ opacity: 0, y: 22 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.65, ease: EASE }}
+              >
+                <Link href="/dashboard" className="brk brk-fill">
+                  Open the console
+                </Link>
+                <a href="https://github.com/Venkat5599/Solanaskills" target="_blank" rel="noreferrer" className="brk">
+                  Read the source
+                </a>
+              </motion.div>
+            </div>
+
             <motion.div
-              className=" acta mono"
-              initial={{ opacity: 0, y: 22 }}
+              className="lin-card"
+              initial={{ opacity: 0, y: 26 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.65, ease: EASE }}
+              transition={{ duration: 0.8, delay: 0.8, ease: EASE }}
             >
-              <Link href="/dashboard" className="brk brk-fill">
-                Open the console
-              </Link>
-              <a href="https://github.com/Venkat5599/Solanaskills" target="_blank" rel="noreferrer" className="brk">
-                Read the source
-              </a>
+              <div className="lin-card-top">
+                <span className="lin-dot3"><i /><i /><i /></span>
+                <span className="lin-card-title mono">auditor · flagged transfers</span>
+              </div>
+              {([
+                ["AML-2703", "Structuring — 3 sub-threshold splits", "High", "pd-crim"],
+                ["AML-2702", "Sanctioned counterparty", "High", "pd-crim"],
+                ["AML-2698", "Velocity burst over window", "Review", "pd-cyan"],
+                ["AML-2691", "Layering pass-through", "Review", "pd-cyan"],
+                ["AML-2680", "Clean — within thresholds", "Clear", "pd-em"],
+              ] as const).map(([id, title, st, dot]) => (
+                <div className="lin-row" key={id}>
+                  <span className="lin-id">{id}</span>
+                  <span className="lin-title">{title}</span>
+                  <span className="lin-pill"><span className={"pd " + dot} />{st}</span>
+                </div>
+              ))}
             </motion.div>
           </div>
         </section>
