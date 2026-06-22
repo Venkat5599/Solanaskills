@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { Reveal, MaskLines, Stagger, StaggerItem } from "./components/motion";
 import { ScrollProgress } from "./components/chrome";
+import { Magnetic, Parallax, WordReveal, Counter } from "./components/awwwards";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -49,7 +50,7 @@ function SectionHead({ idx, kicker, title }: { idx: string; kicker: string; titl
         <h2 className="ahead-title">
           <span className="mono kicker">{kicker}</span>
           <span className="bar">|</span>
-          {title}
+          <WordReveal text={title} />
           <span className="neg">¬</span>
         </h2>
         <span className="ahead-no mono">{idx}</span>
@@ -115,15 +116,18 @@ export default function Page() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.65, ease: EASE }}
               >
-                <Link href="/dashboard" className="brk brk-fill">
-                  Open the console
-                </Link>
+                <Magnetic>
+                  <Link href="/dashboard" className="brk brk-fill">
+                    Open the console
+                  </Link>
+                </Magnetic>
                 <a href="https://github.com/Venkat5599/Solanaskills" target="_blank" rel="noreferrer" className="brk">
                   Read the source
                 </a>
               </motion.div>
             </div>
 
+            <Parallax distance={28} className="lin-card-wrap">
             <motion.div
               className="lin-card"
               initial={{ opacity: 0, y: 26 }}
@@ -148,6 +152,7 @@ export default function Page() {
                 </div>
               ))}
             </motion.div>
+            </Parallax>
           </div>
         </section>
 
@@ -188,9 +193,11 @@ export default function Page() {
             ))}
           </Stagger>
           <Reveal className="caps-cta">
-            <Link href="/dashboard" className="brk brk-fill mono">
-              Run a scenario
-            </Link>
+            <Magnetic>
+              <Link href="/dashboard" className="brk brk-fill mono">
+                Run a scenario
+              </Link>
+            </Magnetic>
           </Reveal>
         </section>
 
@@ -201,7 +208,15 @@ export default function Page() {
             {SPECS.map(([k, v], i) => (
               <StaggerItem className="spec" key={i}>
                 <span className="spec-k mono">{k}</span>
-                <span className="spec-v">{v}</span>
+                <span className="spec-v">
+                  {k === "Tests" ? (
+                    <>
+                      <Counter to={30} /> passing / 0 failing
+                    </>
+                  ) : (
+                    v
+                  )}
+                </span>
               </StaggerItem>
             ))}
           </Stagger>
@@ -229,9 +244,11 @@ export default function Page() {
             <h2 className="acloser-h">See it really run.</h2>
           </Reveal>
           <Reveal delay={0.1}>
-            <Link href="/dashboard" className="brk brk-fill brk-lg mono">
-              Open the console
-            </Link>
+            <Magnetic strength={0.4}>
+              <Link href="/dashboard" className="brk brk-fill brk-lg mono">
+                Open the console
+              </Link>
+            </Magnetic>
           </Reveal>
         </section>
 
