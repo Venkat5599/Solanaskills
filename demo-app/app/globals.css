@@ -350,7 +350,8 @@ footer .cc { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 
   --line: rgba(15, 15, 15, 0.13);
   background: var(--bg);
   color: var(--ink);
-  font-family: "Archivo", -apple-system, system-ui, sans-serif;
+  font-family: "Montserrat", -apple-system, system-ui, sans-serif;
+  font-feature-settings: "ss03", "ss04", "ss05";
   min-height: 100vh;
   letter-spacing: 0;
 }
@@ -391,12 +392,12 @@ footer .cc { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 
 .ahero { padding: 56px 0 30px; }
 .ahero-top { display: flex; align-items: center; gap: 18px; font-size: 12px; color: var(--mut); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 28px; }
 .loaders { margin-left: auto; display: flex; gap: 14px; }
-.braille { font-size: 13px; letter-spacing: -1px; color: var(--ink); }
+.braille { font-family: "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols 2", ui-monospace, monospace; font-size: 13px; letter-spacing: -1px; color: var(--ink); }
 .braille.b1 { animation: shimmer 2s infinite ease-in-out; }
 .braille.b2 { color: var(--acc); animation: shimmer 2s 0.5s infinite ease-in-out; }
 @keyframes shimmer { 0%, 100% { opacity: 0.32; } 50% { opacity: 1; } }
 
-.adisplay { font-family: "Archivo", sans-serif; font-weight: 700; font-size: clamp(54px, 13vw, 188px); line-height: 0.92; letter-spacing: -0.035em; margin: 0; }
+.adisplay { font-family: "Instrument Sans", sans-serif; font-weight: 700; font-size: clamp(54px, 13vw, 188px); line-height: 0.92; letter-spacing: -0.035em; margin: 0; }
 .aline { display: block; }
 
 .ahero-band { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: end; margin-top: 44px; }
@@ -414,7 +415,7 @@ footer .cc { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 
 .asec { padding: 78px 0; border-top: 1px solid var(--line); }
 .ahead { margin-bottom: 38px; }
 .ahead-row { display: flex; align-items: baseline; gap: 14px; }
-.ahead-title { font-family: "Archivo", sans-serif; font-weight: 600; font-size: clamp(20px, 2.6vw, 30px); margin: 0; letter-spacing: -0.01em; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.ahead-title { font-family: "Instrument Sans", sans-serif; font-weight: 600; font-size: clamp(20px, 2.6vw, 30px); margin: 0; letter-spacing: -0.01em; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .ahead .kicker { font-size: 12px; color: var(--mut); text-transform: uppercase; letter-spacing: 0.08em; align-self: center; }
 .ahead .bar { color: var(--mut); font-weight: 400; }
 .ahead .neg { color: var(--acc); }
@@ -429,7 +430,7 @@ footer .cc { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 
 .cap:hover { padding-left: 14px; }
 .cap:hover .cap-arrow { color: var(--acc); transform: translateX(4px); }
 .cap-no { font-size: 12px; color: var(--mut); }
-.cap-t { font-family: "Archivo", sans-serif; font-weight: 600; font-size: 22px; }
+.cap-t { font-family: "Instrument Sans", sans-serif; font-weight: 600; font-size: 22px; }
 .cap-d { color: var(--mut); font-size: 14px; }
 .cap-arrow { color: var(--line); text-align: right; transition: .2s; }
 @media (max-width: 720px) { .cap { grid-template-columns: 34px 1fr; } .cap-d { grid-column: 2; } .cap-arrow { display: none; } }
@@ -440,19 +441,19 @@ footer .cc { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 
 @media (max-width: 720px) { .specs { grid-template-columns: 1fr 1fr; } }
 .spec { display: flex; flex-direction: column; gap: 7px; padding: 24px 0; border-bottom: 1px solid var(--line); }
 .spec-k { font-size: 11px; color: var(--mut); text-transform: uppercase; letter-spacing: 0.08em; }
-.spec-v { font-family: "Archivo", sans-serif; font-weight: 600; font-size: 20px; }
+.spec-v { font-family: "Instrument Sans", sans-serif; font-weight: 600; font-size: 20px; }
 
 /* timeline */
 .tl { display: flex; flex-direction: column; }
 .tl-row { display: grid; grid-template-columns: 60px 200px 1fr; gap: 20px; align-items: baseline; padding: 22px 0; border-top: 1px solid var(--line); }
 @media (max-width: 720px) { .tl-row { grid-template-columns: 40px 1fr; } .tl-d { grid-column: 2; } }
 .tl-no { font-size: 13px; color: var(--acc); }
-.tl-t { font-family: "Archivo", sans-serif; font-weight: 600; font-size: 22px; }
+.tl-t { font-family: "Instrument Sans", sans-serif; font-weight: 600; font-size: 22px; }
 .tl-d { color: var(--mut); font-size: 14px; }
 
 /* closer */
 .acloser { padding: 130px 0 100px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 40px; border-top: 1px solid var(--line); }
-.acloser-h { font-family: "Archivo", sans-serif; font-weight: 700; font-size: clamp(48px, 11vw, 150px); line-height: 0.92; letter-spacing: -0.04em; margin: 0; }
+.acloser-h { font-family: "Instrument Sans", sans-serif; font-weight: 700; font-size: clamp(48px, 11vw, 150px); line-height: 0.92; letter-spacing: -0.04em; margin: 0; }
 
 /* footer */
 .aptos .afoot { background: transparent; color: var(--ink); border-radius: 0; margin-top: 0; }
