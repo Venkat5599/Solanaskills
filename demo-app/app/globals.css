@@ -339,15 +339,20 @@ footer .cc { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 
 /* Aptos-Labs technical theme — scoped to the landing (.aptos) only       */
 /* ===================================================================== */
 .aptos {
-  --bg: #ffffff;
-  --ink: #0f0f0f;
-  --teal: #298479;
-  --pink: #d95b9a;
-  --coral: #ff7575;
-  --peach: #f0a35a;
-  --acc: var(--teal);          /* default accent; sections override per-block */
-  --mut: #6b6b6b;
-  --line: rgba(15, 15, 15, 0.13);
+  /* ART+TECH Report palette — misty-rose canvas, vivid multi-accents */
+  --bg: #FFD9D4;
+  --ink: #1A1B1F;
+  --salmon: #FF7358;
+  --blue: #5A5AFF;
+  --mint: #14D9A6;
+  --eblue: #2F23F2;
+  --teal: var(--salmon);       /* acc slots remapped to ATR colors */
+  --pink: var(--blue);
+  --coral: var(--mint);
+  --peach: var(--eblue);
+  --acc: var(--salmon);        /* default accent; sections override per-block */
+  --mut: #7a6a66;
+  --line: rgba(26, 27, 31, 0.16);
   background: var(--bg);
   color: var(--ink);
   font-family: "Montserrat", -apple-system, system-ui, sans-serif;
@@ -369,7 +374,7 @@ footer .cc { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 
 @media (max-width: 720px) { .awrap { padding: 0 22px; } }
 
 /* top bar */
-.atop { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 40; background: rgba(255, 255, 255, 0.84); backdrop-filter: blur(8px); }
+.atop { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 40; background: rgba(255, 217, 212, 0.85); backdrop-filter: blur(8px); }
 .brandline { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; letter-spacing: 0.02em; }
 .brandline .ver { color: var(--mut); margin-left: 6px; font-size: 11px; }
 .atop-right { display: flex; gap: 22px; font-size: 12px; }

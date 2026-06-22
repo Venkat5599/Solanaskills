@@ -197,7 +197,7 @@ export default function Page() {
         </section>
 
         {/* closer */}
-        <section className="acloser acc-pink">
+        <section className="acloser acc-teal">
           <Reveal>
             <h2 className="acloser-h">See it really run.</h2>
           </Reveal>
