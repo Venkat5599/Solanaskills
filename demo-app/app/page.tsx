@@ -8,6 +8,20 @@ import { Magnetic, Parallax, WordReveal, Counter } from "./components/awwwards";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
+const KEYWORDS = [
+  "Confidential Transfers",
+  "Token-2022",
+  "Auditor ElGamal Key",
+  "twisted-ElGamal",
+  "Ristretto255",
+  "BSGS Discrete Log",
+  "AML Engine",
+  "Structuring",
+  "Zero-Knowledge",
+  "SHA-256 Reports",
+  "Solana",
+];
+
 const CAPS: [string, string][] = [
   ["Sanctioned", "OFAC / denylisted counterparty"],
   ["Structuring", "a big payment split into sub-threshold pieces"],
@@ -156,12 +170,17 @@ export default function Page() {
           </div>
         </section>
 
-        {/* scroll ticker */}
+        {/* keyword ticker */}
         <div className="scrollband mono" aria-hidden>
           <div className="scrollband-track">
-            {Array.from({ length: 16 }).map((_, i) => (
-              <span key={i}>▽ Scroll ▽</span>
-            ))}
+            {Array.from({ length: 2 }).flatMap((_, r) =>
+              KEYWORDS.map((k, i) => (
+                <span key={`${r}-${i}`}>
+                  {k}
+                  <span className="kw-sep">◆</span>
+                </span>
+              )),
+            )}
           </div>
         </div>
 
