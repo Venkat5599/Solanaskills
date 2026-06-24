@@ -1,7 +1,7 @@
-# Colosseum Listing — Questionnaire Answers
+# Submission — Questionnaire Answers
 
 Paste-ready answers for the Solana AI Kit skill-bounty listing. Copy each answer
-into the matching field on the listing.
+into the matching field on whatever platform hosts the listing.
 
 ---
 
