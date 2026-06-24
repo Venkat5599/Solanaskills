@@ -397,6 +397,33 @@ footer .cc { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 
 .brk-install { background: transparent; border: 1px solid var(--line); padding: 12px 18px; border-radius: 10px; font-family: inherit; transition: border-color .2s, color .2s; }
 .brk-install:hover { border-color: var(--acc); }
 
+/* ---- install screen ---- */
+.inst-display { font-family: "Fraunces", Georgia, serif; font-weight: 300; font-optical-sizing: auto; font-variation-settings: "opsz" 144;
+  font-size: clamp(52px, 11vw, 150px); line-height: 0.9; letter-spacing: -0.03em; margin: 18px 0 0; color: var(--ink); }
+.inst-lead { max-width: 620px; margin-top: 26px; }
+.inst-lead b { color: var(--ink); font-weight: 600; }
+.inst-steps { margin-top: 52px; display: flex; flex-direction: column; gap: 0; }
+.inst-step { padding: 28px 0; border-top: 1px solid var(--line); }
+.inst-step:last-of-type { border-bottom: 1px solid var(--line); }
+.inst-step-head { display: flex; align-items: baseline; gap: 16px; }
+.inst-no { font-size: 13px; color: var(--acc); }
+.inst-t { font-family: "Inter", sans-serif; font-weight: 600; font-size: clamp(20px, 2.4vw, 26px); letter-spacing: -0.01em; }
+.inst-b { color: var(--mut); font-size: 15px; line-height: 1.5; margin: 8px 0 16px; max-width: 640px; }
+
+.cmd { display: flex; align-items: stretch; justify-content: space-between; gap: 14px;
+  background: var(--ink); color: var(--bg, #fafffa); border-radius: 12px; overflow: hidden; }
+.cmd-text { flex: 1; min-width: 0; padding: 15px 18px; font-size: 13px; line-height: 1.5; color: #fafffa;
+  overflow-x: auto; white-space: nowrap; }
+.cmd-prompt { color: var(--acc); margin-right: 6px; user-select: none; }
+.cmd-copy { flex-shrink: 0; border: 0; border-left: 1px solid rgba(250,255,250,0.14); background: transparent;
+  color: var(--moss-glow, #93b799); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 0 20px; cursor: pointer; transition: color .2s, background .2s; }
+.cmd-copy:hover { color: var(--acc); background: rgba(43,238,75,0.08); }
+
+.inst-alt { margin-top: 40px; display: flex; flex-direction: column; gap: 12px; }
+.inst-alt-k { font-size: 12px; color: var(--mut); text-transform: uppercase; letter-spacing: 0.06em; }
+.inst-cta { margin-top: 48px; }
+
 /* hero */
 .ahero { padding: 56px 0 30px; }
 .ahero-top { display: flex; align-items: center; gap: 18px; font-size: 12px; color: var(--mut); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 28px; }
