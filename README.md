@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Venkat5599/Solanaskills/actions/workflows/ci.yml/badge.svg)](https://github.com/Venkat5599/Solanaskills/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
-[![tests](https://img.shields.io/badge/tests-34%20passing-brightgreen.svg)](#install)
+[![tests](https://img.shields.io/badge/tests-39%20passing-brightgreen.svg)](#install)
 [![crypto](https://img.shields.io/badge/crypto-twisted--ElGamal%20%C2%B7%20Ristretto255-purple.svg)](#real-cryptography-not-a-stub)
 
 **The auditor-side compliance layer for Solana Token-2022 Confidential Transfers.**
@@ -66,14 +66,19 @@ decrypts ciphertext into amounts; `bun test` proves the encrypt→decrypt round-
 across the full 48-bit range, that ciphertext is randomized (semantic security),
 and that the **wrong key cannot recover the amount.**
 
-It also implements Solana's **real production amount layout** — a 16-bit-low +
-32-bit-high ElGamal split (CT09), not just the demo's equal limbs. `layout: "lohi"`
-+ `splLoHiCiphertextParser()` decrypt that exact 128-byte wire framing, round-trip
-tested offline (the 32-bit high limb uses a one-time precomputed discrete-log
-table, mirroring Solana's own SDK; per-transfer decrypts run in tens of ms). The
-only remaining seam is the byte framing around those two ciphertexts if a future
-`@solana/spl-token` release changes it — `parseAuditorCiphertext` overrides it.
-The crypto, both layouts, AML engine, loop, and reporting are finished.
+It decrypts **real `@solana/zk-sdk` ciphertext.** `convention: "solana"` matches
+Solana's exact scheme (pubkey `s⁻¹·H`, decrypt `amount·G = C − s·D`) over the same
+Ristretto255 group and basepoint, so the same solver recovers amounts from genuine
+on-chain bytes. `test/solana-vectors.test.ts` decrypts ciphertext produced by the
+production library — byte-identical to a Token-2022 confidential transfer's auditor
+amount — and recovers the exact value, using only this engine's crypto (no zk-sdk
+at test or run time). It also implements Solana's **real production amount layout**:
+a 16-bit-low + 32-bit-high ElGamal split (CT09), `layout: "lohi"` +
+`splLoHiCiphertextParser()`, over the canonical 128-byte framing. The only
+remaining seam is the byte *offsets* of that amount inside the transfer instruction
+if a future `@solana/spl-token` release reframes them — `parseAuditorCiphertext`
+overrides it. The crypto, both conventions, both layouts, AML engine, loop, and
+reporting are finished.
 
 ## Why it fits the kit
 
@@ -81,7 +86,7 @@ The crypto, both layouts, AML engine, loop, and reporting are finished.
   CT *sending* reference and from the crypto-legal seed.
 - **Useful** — every regulated team that wants confidential payments hits this wall.
 - **Cross-domain** — privacy/ZK + compliance + payments + agentic loops.
-- **Quality** — `bun test` → 34 passing incl. real-crypto round-trips; `tsc`
+- **Quality** — `bun test` → 39 passing incl. real-crypto round-trips; `tsc`
   clean; runnable `bun run demo`; CI on every push.
 - **Fit** — deepens Token-2022; sits beside the CT sending docs as their
   compliance counterpart; reuses the kit's Helius MCP for observation.
@@ -97,7 +102,7 @@ Run the core:
 
 ```bash
 cd lib && bun install
-bun test        # 34 passing (incl. real twisted-ElGamal round-trips)
+bun test        # 39 passing (incl. real twisted-ElGamal round-trips)
 bun run demo    # end-to-end: encrypt → decrypt → AML flags → hashed report
 bunx tsc --noEmit
 ```
@@ -137,7 +142,7 @@ solana-confidential-skill/
 ├── agents/auditor-compliance-engineer.md
 ├── commands/               # /confidential-watch /confidential-dryrun /configure-auditor-mint
 ├── rules/                  # auto-loads on confidential/elgamal/aml/compliance code
-├── lib/                    # runnable TS core + tests (bun test → 34 passing)
+├── lib/                    # runnable TS core + tests (bun test → 39 passing)
 │   └── src/crypto/         # real twisted-ElGamal + BSGS discrete log
 ├── examples/demo.ts        # end-to-end runnable demo (bun run demo)
 ├── demo-app/               # live chat: a Claude agent that runs the skill's engine
@@ -148,13 +153,13 @@ solana-confidential-skill/
 
 ## Status & honesty note
 
-The on-chain ZK ElGamal program is audit-paused on mainnet/devnet (2026), so live
-on-chain confidential transfers are temporarily unavailable to *produce*. This
-skill's decryption + AML pipeline do **not** depend on that program — they run
-today, offline, as `bun run demo` and `bun test` prove (including the real lo/hi
-amount layout). On re-enable, the only work is pointing `observe` at live
-transfers; the crypto, both ciphertext layouts, and the whole engine are already
-finished and tested. See `skill/resources.md` for status links.
+The decryption path is verified against **real `@solana/zk-sdk` ciphertext bytes**
+(byte-identical to on-chain) — `bun test` proves it offline, no localnet. Producing
+*new* live transfers depends on the on-chain ZK ElGamal Proof program; the skill's
+decryption + AML pipeline do **not**. Once you have a stream of real transfers,
+pointing `observe` at them is the only remaining wiring — the crypto, both
+ciphertext conventions/layouts, and the whole engine are finished and tested. See
+`skill/resources.md` for status links.
 
 ## Security posture
 

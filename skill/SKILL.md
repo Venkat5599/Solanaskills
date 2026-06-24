@@ -198,7 +198,7 @@ Dry-run the **entire** pipeline with no crypto and no network using
 
 `../lib` — TypeScript core. AML engine, rolling state, budget, reporting, loop,
 **and real twisted-ElGamal decryption** (Ristretto255 + baby-step-giant-step
-discrete log, via `@noble/curves`). `cd lib && bun test` → **34 passing**
+discrete log, via `@noble/curves`). `cd lib && bun test` → **39 passing**
 (incl. encrypt→decrypt round-trips across the full 48-bit range, semantic
 security, wrong-key-fails, and Solana's real lo/hi amount layout), `bunx tsc
 --noEmit` → **clean**.
@@ -211,19 +211,22 @@ cd lib && bun run demo   # encrypts a synthetic transfer stream under a fresh
                          # flags + a hashed report
 ```
 
-The crypto is fixed and done. Both amount layouts are implemented and tested: the
-engine's equal-limb format **and Solana's real 16-bit-low + 32-bit-high split**
-(`layout: "lohi"` + `splLoHiCiphertextParser()`, CT09). The only remaining seam is
-the byte framing around the two on-chain ciphertexts if a future `@solana/spl-token`
-release changes it — `parseAuditorCiphertext` overrides it. See `decryption.md`.
+The crypto is fixed and done, and **verified against real `@solana/zk-sdk`
+ciphertext** (byte-identical to on-chain): `convention: "solana"` decrypts genuine
+Solana bytes (`amount·G = C − s·D`), proven in `test/solana-vectors.test.ts`. Both
+amount layouts are implemented — the engine's equal-limb format **and Solana's real
+16-bit-low + 32-bit-high split** (`layout: "lohi"` + `splLoHiCiphertextParser()`,
+CT09). The only remaining seam is the byte *offsets* of the amount inside the
+transfer instruction if a future `@solana/spl-token` release reframes them —
+`parseAuditorCiphertext` overrides it. See `decryption.md`.
 
-> **Status (2026):** the on-chain ZK ElGamal program is audit-paused, so live
-> on-chain confidential transfers are temporarily unavailable to *produce*. This
-> skill's decryption + AML pipeline do **not** depend on that program — they run
-> today (`bun run demo`, `bun test`), including the real lo/hi layout. On
-> re-enable, the only work is pointing `observe` at live transfers; the crypto,
-> both ciphertext layouts, and the whole engine are already finished. Deliberately
-> forward-fit for the institutional confidential-payments wave it unlocks.
+> **Status (2026):** the decrypt path is verified against real `@solana/zk-sdk`
+> bytes offline (`bun test`, no localnet). Producing *new* live transfers depends on
+> the on-chain ZK ElGamal Proof program; this skill's decryption + AML pipeline do
+> **not**. Once a stream of real transfers exists, pointing `observe` at them is the
+> only remaining wiring — the crypto, both conventions and layouts, and the whole
+> engine are finished. Deliberately forward-fit for the institutional
+> confidential-payments wave it unlocks.
 
 ## Prime directive
 

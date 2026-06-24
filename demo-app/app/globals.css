@@ -498,24 +498,8 @@ footer .cc { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 
 }
 
 /* ===================================================================== */
-/* Premium chrome: custom cursor · film grain · intro curtain            */
+/* Premium chrome: film grain · intro curtain                            */
 /* ===================================================================== */
-
-/* --- custom cursor (mix-blend so one colour reads on linen + obsidian) --- */
-.cursor-root { position: fixed; inset: 0; z-index: 9998; pointer-events: none; mix-blend-mode: difference; transition: opacity .25s ease; }
-.cursor-dot, .cursor-ring { position: fixed; top: 0; left: 0; border-radius: 50%; pointer-events: none; will-change: transform; }
-.cursor-dot { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: #fff; }
-.cursor-ring {
-  width: 38px; height: 38px; margin: -19px 0 0 -19px; border: 1px solid #fff;
-  transition: width .25s cubic-bezier(.22,1,.36,1), height .25s cubic-bezier(.22,1,.36,1),
-              margin .25s cubic-bezier(.22,1,.36,1), background .25s, border-color .25s;
-}
-.cursor-ring.hot {
-  width: 64px; height: 64px; margin: -32px 0 0 -32px;
-  background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.65);
-}
-body.cursor-on, body.cursor-on a, body.cursor-on button, body.cursor-on .brk,
-body.cursor-on textarea, body.cursor-on input, body.cursor-on [role="button"] { cursor: none; }
 
 /* --- film grain --- */
 .grain { position: fixed; inset: -50%; width: 200%; height: 200%; z-index: 9997; pointer-events: none;
@@ -544,5 +528,4 @@ body.cursor-on textarea, body.cursor-on input, body.cursor-on [role="button"] { 
 
 @media (prefers-reduced-motion: reduce) {
   .grain { animation: none; }
-  .cursor-root { display: none; }
 }

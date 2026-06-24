@@ -3,6 +3,7 @@ import { bytesToScalar } from "./crypto/ristretto.ts";
 import {
   decryptAmount, decryptAmountLoHi, DEFAULT_LIMBS, LOHI_SPLIT, type LimbConfig,
 } from "./crypto/twisted-elgamal.ts";
+import { decryptSolanaAmountLoHi } from "./crypto/solana-elgamal.ts";
 import { babyTable, warmTable } from "./crypto/dlog.ts";
 
 /**
@@ -14,6 +15,15 @@ import { babyTable, warmTable } from "./crypto/dlog.ts";
  *              the real auditor ciphertext wire layout.
  */
 export type CiphertextLayout = "limbed" | "lohi";
+
+/**
+ * Decrypt convention:
+ *   "engine" — this skill's own twisted-ElGamal (pubkey s·H, decrypt C − s⁻¹·D).
+ *   "solana" — `@solana/zk-sdk`-compatible (pubkey s⁻¹·H, decrypt C − s·D). This
+ *              is the convention that decrypts REAL on-chain confidential-transfer
+ *              auditor ciphertext. Verified against real zk-sdk bytes.
+ */
+export type DecryptConvention = "engine" | "solana";
 
 /**
  * Real auditor decryptor. Twisted-ElGamal over Ristretto255 (the same group
@@ -42,6 +52,12 @@ export interface SplAuditorDecryptorOptions {
    * it is warmed in the constructor so per-transfer decryption stays fast.
    */
   layout?: CiphertextLayout;
+  /**
+   * Decrypt convention. Default "engine". Set "solana" to decrypt REAL on-chain
+   * `@solana/zk-sdk` auditor ciphertext (pubkey s⁻¹·H, amount·G = C − s·D). Use
+   * with `layout: "lohi"` for the production 16-bit-low + 32-bit-high split.
+   */
+  convention?: DecryptConvention;
 }
 
 export class SplAuditorDecryptor implements AuditorDecryptor {
@@ -49,6 +65,7 @@ export class SplAuditorDecryptor implements AuditorDecryptor {
   private readonly cfg: LimbConfig;
   private readonly parse: (raw: Uint8Array) => Uint8Array;
   private readonly layout: CiphertextLayout;
+  private readonly convention: DecryptConvention;
 
   constructor(opts: SplAuditorDecryptorOptions) {
     this.secret =
@@ -58,7 +75,8 @@ export class SplAuditorDecryptor implements AuditorDecryptor {
     this.cfg = opts.limbs ?? DEFAULT_LIMBS;
     this.parse = opts.parseAuditorCiphertext ?? ((raw) => raw);
     this.layout = opts.layout ?? "limbed";
-    if (this.layout === "lohi") {
+    this.convention = opts.convention ?? "engine";
+    if (this.convention === "solana" || this.layout === "lohi") {
       warmTable(LOHI_SPLIT.loBits); // 16-bit low table (instant)
       warmTable(LOHI_SPLIT.hiBits); // 32-bit high table (one-time build, then cached)
     } else {
@@ -68,6 +86,10 @@ export class SplAuditorDecryptor implements AuditorDecryptor {
 
   async decrypt(record: ConfidentialTransferRecord): Promise<bigint> {
     const ciphertext = this.parse(record.auditorCiphertext);
+    if (this.convention === "solana") {
+      // Real on-chain auditor amount: lo(16) + hi(32) Solana ElGamal ciphertext.
+      return decryptSolanaAmountLoHi(ciphertext, this.secret);
+    }
     return this.layout === "lohi"
       ? decryptAmountLoHi(ciphertext, this.secret)
       : decryptAmount(ciphertext, this.secret, this.cfg);

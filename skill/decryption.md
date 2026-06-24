@@ -26,7 +26,8 @@ decrypt:    C − s⁻¹·D = r·H + x·G − s⁻¹·(r·s·H) = x·G
 | File | Role |
 |---|---|
 | `crypto/ristretto.ts` | group ops, `G`, `H`, scalars, modular inverse |
-| `crypto/twisted-elgamal.ts` | keygen, `encryptAmount`, `decryptAmount`, (de)serialize |
+| `crypto/twisted-elgamal.ts` | keygen, `encryptAmount`, `decryptAmount`, lo/hi, (de)serialize |
+| `crypto/solana-elgamal.ts` | `@solana/zk-sdk`-compatible decrypt (`C − s·D`) for real on-chain bytes |
 | `crypto/dlog.ts` | baby-step giant-step limb solver |
 | `decryptor.ts` | `SplAuditorDecryptor` (real) + `MockAuditorDecryptor` (tests) |
 
@@ -67,17 +68,50 @@ decryptor constructor and cached, so per-transfer decryption stays in the tens o
 milliseconds (a 10,000-token transfer decrypts in ~50 ms after warm-up). Warm it
 ahead with `warmTable(32)` if you want a hot start.
 
+## Decrypting REAL on-chain ciphertext (`convention: "solana"`)
+
+Solana's `@solana/zk-sdk` uses the inverse secret convention from this engine's
+own scheme:
+
+```
+Solana:  pubkey P = s⁻¹·H,  decrypt  amount·G = C − s·D
+(ours):  pubkey P = s·H,    decrypt  amount·G = C − s⁻¹·D
+```
+
+Both recover `amount·G` over the **same** Ristretto255 group with the **same**
+basepoint, so this engine's baby-step-giant-step solver recovers the amount from
+real Solana ciphertext unchanged — only the handle is multiplied by `s` instead of
+`s⁻¹`. Select it with `convention: "solana"`:
+
+```ts
+const auditor = new SplAuditorDecryptor({
+  auditorElGamalSecret,            // the mint's auditor ElGamal secret (HSM/TEE)
+  layout: "lohi",
+  convention: "solana",            // C − s·D, zk-sdk-compatible
+  parseAuditorCiphertext: splLoHiCiphertextParser(),
+});
+const amount = await auditor.decrypt(record); // decrypts genuine on-chain bytes
+```
+
+This is **verified against real `@solana/zk-sdk` output**: `test/solana-vectors.test.ts`
+decrypts ciphertext bytes produced by the production library (byte-identical to
+on-chain) and recovers the exact amount, using only this engine's own crypto — no
+zk-sdk dependency at test or run time. See `scripts/gen-solana-fixtures.ts` for
+provenance. `decryptSolanaLimb` / `decryptSolanaAmountLoHi` are exported directly.
+
 ### The only remaining seam
 
-The cryptography and both layouts (`limbed`, `lohi`) are fixed and tested. The
-sole thing that can change across `@solana/spl-token` versions is the **byte
-framing** around those two ElGamal ciphertexts. `splLoHiCiphertextParser()`
-implements the canonical `lo‖hi` span; if a future release reframes it, override
-`parseAuditorCiphertext` — the crypto and the AML engine never change. Verify the
-framing against the installed version (guardrail **CT09**).
+The cryptography, both conventions (`engine`, `solana`), and both layouts
+(`limbed`, `lohi`) are fixed and tested against real bytes. The sole thing that can
+change across `@solana/spl-token` versions is the **byte framing** of the auditor
+amount *inside the transfer instruction* — i.e. the offsets at which the two
+ElGamal ciphertexts sit. `splLoHiCiphertextParser()` takes the canonical `lo‖hi`
+span; if a future release reframes it, override `parseAuditorCiphertext` — the
+crypto and the AML engine never change. Verify against the installed version
+(guardrail **CT09**).
 
 The legacy equal-limb path (`layout: "limbed"`, default) consumes this skill's own
-`encryptAmount` output and powers the demo and tests.
+`encryptAmount` output and powers the demo.
 
 ## Key handling (CT01/CT02)
 

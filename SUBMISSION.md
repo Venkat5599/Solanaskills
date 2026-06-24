@@ -1,7 +1,7 @@
 # Submission — solana-confidential-skill
 
 **Repo:** https://github.com/Venkat5599/Solanaskills
-**License:** MIT · **CI:** passing · **Tests:** 34 passing · **Demo:** `cd lib && bun run demo`
+**License:** MIT · **CI:** passing · **Tests:** 39 passing · **Demo:** `cd lib && bun run demo`
 
 Draft answers for the Colosseum listing questionnaire. Edit to taste before filing.
 
@@ -38,7 +38,12 @@ kit's CT-sending reference and from the seeded crypto-legal skill. The hard part
   over Ristretto255 (Solana's group) + baby-step-giant-step discrete log. `bun
   test` proves encrypt→decrypt round-trips across the full 48-bit range, ciphertext
   randomization (semantic security), and that the **wrong key cannot decrypt**.
-- **34 tests passing**, `tsc --noEmit` clean, CI runs install + typecheck + test +
+- **Verified against REAL `@solana/zk-sdk` ciphertext.** `convention: "solana"`
+  matches Solana's exact scheme (`amount·G = C − s·D`); `test/solana-vectors.test.ts`
+  decrypts bytes produced by the production library — byte-identical to on-chain —
+  and recovers the exact amount, using only this engine's crypto (no zk-sdk at test
+  or run time). This is genuine mainnet-byte compatibility for the decrypt path.
+- **39 tests passing**, `tsc --noEmit` clean, CI runs install + typecheck + test +
   demo on every push.
 - **Runnable end-to-end:** `bun run demo` encrypts a synthetic transfer stream
   under a fresh auditor key, then really decrypts + scores it, printing flags and a
@@ -64,9 +69,9 @@ cd lib && bun install && bun test && bun run demo
 ```
 
 ### Status / honesty note
-The on-chain ZK ElGamal program is audit-paused on mainnet (2026), so live
-confidential transfers are temporarily unavailable to *produce*. This skill's
-decryption + AML pipeline don't depend on that program — they run today, offline,
-as the demo and tests prove, including Solana's real lo/hi amount layout. On
-re-enable, the only work is pointing `observe` at live transfers; the crypto, both
-ciphertext layouts, and the engine are finished and tested.
+The decrypt path is verified against **real `@solana/zk-sdk` ciphertext bytes**
+(byte-identical to on-chain) — proven offline by `bun test`, no localnet. Producing
+*new* live transfers depends on the on-chain ZK ElGamal Proof program; the skill's
+decryption + AML pipeline don't. Once a stream of real transfers exists, pointing
+`observe` at them is the only remaining wiring — the crypto, both ciphertext
+conventions and layouts, and the engine are finished and tested.

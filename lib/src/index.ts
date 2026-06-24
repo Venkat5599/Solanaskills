@@ -22,6 +22,10 @@ export {
 } from "./crypto/twisted-elgamal.ts";
 export { warmTable, babyTable } from "./crypto/dlog.ts";
 export {
+  decryptSolanaLimb,
+  decryptSolanaAmountLoHi,
+} from "./crypto/solana-elgamal.ts";
+export {
   splAuditorCiphertextParser,
   splLoHiCiphertextParser,
   sliceLoHi,
