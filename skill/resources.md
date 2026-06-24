@@ -32,7 +32,7 @@
   `commitment||handle` parser, Solana's lo(16)/hi(32) production layout, and a
   `@solana/zk-sdk`-compatible decrypt (`solana-elgamal.ts`, `C − s·D`).
 - Engine + loop: `../lib/src` — pure AML engine, state, budgets, reporting, loop.
-- Tests: `../lib/test` — `bun test` (**39 passing**), incl. encrypt→decrypt
+- Tests: `../lib/test` — `bun test` (**44 passing**), incl. encrypt→decrypt
   round-trips, semantic security, wrong-key-fails, parser round-trip, the real
   lo/hi layout, and decryption of **real `@solana/zk-sdk` ciphertext vectors**
   (`solana-vectors.test.ts`). `tsc` clean.

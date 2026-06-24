@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Venkat5599/Solanaskills/actions/workflows/ci.yml/badge.svg)](https://github.com/Venkat5599/Solanaskills/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
-[![tests](https://img.shields.io/badge/tests-39%20passing-brightgreen.svg)](#install)
+[![tests](https://img.shields.io/badge/tests-44%20passing-brightgreen.svg)](#install)
 [![crypto](https://img.shields.io/badge/crypto-twisted--ElGamal%20%C2%B7%20Ristretto255-purple.svg)](#real-cryptography-not-a-stub)
 
 **The auditor-side compliance layer for Solana Token-2022 Confidential Transfers.**
@@ -86,7 +86,7 @@ reporting are finished.
   CT *sending* reference and from the crypto-legal seed.
 - **Useful** — every regulated team that wants confidential payments hits this wall.
 - **Cross-domain** — privacy/ZK + compliance + payments + agentic loops.
-- **Quality** — `bun test` → 39 passing incl. real-crypto round-trips; `tsc`
+- **Quality** — `bun test` → 44 passing incl. real-crypto round-trips; `tsc`
   clean; runnable `bun run demo`; CI on every push.
 - **Fit** — deepens Token-2022; sits beside the CT sending docs as their
   compliance counterpart; reuses the kit's Helius MCP for observation.
@@ -102,7 +102,7 @@ Run the core:
 
 ```bash
 cd lib && bun install
-bun test        # 39 passing (incl. real twisted-ElGamal round-trips)
+bun test        # 44 passing (incl. real twisted-ElGamal round-trips)
 bun run demo    # end-to-end: encrypt → decrypt → AML flags → hashed report
 bunx tsc --noEmit
 ```
@@ -142,24 +142,49 @@ solana-confidential-skill/
 ├── agents/auditor-compliance-engineer.md
 ├── commands/               # /confidential-watch /confidential-dryrun /configure-auditor-mint
 ├── rules/                  # auto-loads on confidential/elgamal/aml/compliance code
-├── lib/                    # runnable TS core + tests (bun test → 39 passing)
-│   └── src/crypto/         # real twisted-ElGamal + BSGS discrete log
+├── lib/                    # runnable TS core + tests (bun test → 44 passing)
+│   └── src/crypto/         # real twisted-ElGamal + BSGS + Solana-convention decrypt
+│   └── src/chain/          # real RPC observer + on-chain mint-config reader
 ├── examples/demo.ts        # end-to-end runnable demo (bun run demo)
+├── examples/observe-devnet.ts  # LIVE devnet smoke (bun run observe)
 ├── demo-app/               # live chat: a Claude agent that runs the skill's engine
 ├── .github/workflows/ci.yml
 ├── install.sh  install-custom.sh
 └── LICENSE                 # MIT
 ```
 
+## Real chain wiring
+
+`observe()` is not a stub. `lib/src/chain/` ships a real `RpcConfidentialObserver`
+(queries Solana RPC, decodes Token-2022 confidential-transfer instructions,
+oldest-first) and `readConfidentialMintConfig` (parses a mint's
+ConfidentialTransferMint extension from chain). `bun run observe` is **live on
+devnet** — it reads a real confidential mint and prints its on-chain auditor
+ElGamal pubkey:
+
+```
+$ cd lib && bun run observe
+Connected. solana-core 4.1.0-rc.1 · slot 471580075
+ZK ElGamal Proof program executable: true
+mint 9QsnKNvf25R2kwbm5HaspNDroh4gV1Uf8sx7Qt4CyCF2
+  auditor ElGamal pubkey : d8e3a866…15625d3f   # parsed from real on-chain TLV
+```
+
 ## Status & honesty note
 
 The decryption path is verified against **real `@solana/zk-sdk` ciphertext bytes**
-(byte-identical to on-chain) — `bun test` proves it offline, no localnet. Producing
-*new* live transfers depends on the on-chain ZK ElGamal Proof program; the skill's
-decryption + AML pipeline do **not**. Once you have a stream of real transfers,
-pointing `observe` at them is the only remaining wiring — the crypto, both
-ciphertext conventions/layouts, and the whole engine are finished and tested. See
-`skill/resources.md` for status links.
+(byte-identical to on-chain) and the chain wiring is **live-tested on devnet** (the
+ZK ElGamal Proof program is currently `executable` on devnet + mainnet). The one
+thing this repo can't do in pure JS is *produce* a new confidential transfer: the
+`@solana/spl-token` JS client ships no confidential-transfer instruction builders
+(that path is the Rust `spl-token` CLI). So the engine, both ciphertext
+conventions/layouts, the RPC observer, and the on-chain config reader are all real
+and tested; producing a fresh transfer to decrypt end-to-end is a one-CLI step
+outside this skill's scope. See `skill/resources.md` for status links.
+
+The chat demo never hard-fails: if the LLM gateway is unreachable, the API
+**runs the skill's real engine locally** and returns genuine flags + a report hash
+(see `demo-app/app/api/chat/route.ts`).
 
 ## Security posture
 

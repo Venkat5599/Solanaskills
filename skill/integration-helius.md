@@ -7,40 +7,42 @@ observe: (cursor: LoopCursor) => Promise<ConfidentialTransferRecord[]>
 ```
 
 It returns confidential transfers for the audited mint that are **newer than the
-cursor**, in **block order (oldest first — CT08)**. Two ways to build it.
+cursor**, in **block order (oldest first — CT08)**.
 
-## Option A — poll signatures (any RPC, zero extra infra)
+## Option A — the shipped `RpcConfidentialObserver` (real chain wiring)
+
+This is real, not pseudocode: `../lib/src/chain/observer.ts` connects to a Solana
+RPC, pulls signatures for the watched account, decodes Token-2022 confidential
+transfer instructions (outer discriminator `27`, sub-types `Transfer`/`TransferWithSplitProofs`),
+and yields records oldest-first. Live-verified on devnet (`bun run observe`).
 
 ```ts
-import { Connection, PublicKey } from "@solana/web3.js";
+import { RpcConfidentialObserver, readConfidentialMintConfig } from "solana-confidential-compliance/chain";
+import { Connection } from "@solana/web3.js";
+
 const connection = new Connection(process.env.RPC_URL!, "confirmed");
 
-async function fetchNewConfidentialTransfers(cursor) {
-  const sigs = await connection.getSignaturesForAddress(new PublicKey(MINT), { limit: 1000 });
-  const fresh = sigs.filter((s) => (s.slot ?? 0) > cursor.lastSlot).reverse(); // oldest → newest
+// Read the mint's auditor config straight from chain (real TLV parse).
+const cfg = await readConfidentialMintConfig(connection, MINT);
+//   { authority, autoApproveNewAccounts, auditorElGamalPubkey, ... }
 
-  const records = [];
-  for (const s of fresh) {
-    const tx = await connection.getParsedTransaction(s.signature, { maxSupportedTransactionVersion: 0 });
-    for (const ix of confidentialTransferIxs(tx)) {       // filter Token-2022 CT instructions
-      records.push({
-        signature: s.signature,
-        slot: s.slot,
-        blockTime: (tx?.blockTime ?? 0) * 1000,           // ms — AML windows are ms
-        mint: MINT,
-        source: ix.source,
-        destination: ix.destination,
-        auditorCiphertext: ix.auditorCiphertext,          // raw bytes → decryptor (CT09 parser)
-      });
-    }
-  }
-  return records;
-}
+const observer = new RpcConfidentialObserver({
+  connection, address: WATCHED_TOKEN_ACCOUNT, mint: MINT,
+  extractAuditorCiphertext: (ixData) => /* CT09 span for your spl-token version */ ixData,
+});
+
+const loop = new ConfidentialComplianceLoop({ /* … */ observe: (c) => observer.observe(c) });
 ```
 
-**Block order matters.** The windowed detectors (structuring, velocity, layering,
-dormancy) assume transfers arrive oldest-first. The `.reverse()` above is load-
-bearing, not cosmetic.
+The observer returns transfers oldest-first (CT08) and only past `cursor.lastSlot`.
+The one version-dependent seam is pulling the auditor ciphertext out of the
+instruction data — supply `extractAuditorCiphertext`, then decrypt with
+`layout: "lohi", convention: "solana"` (`decryption.md`).
+
+> **Live example.** `bun run observe` reads a real devnet confidential mint and
+> prints its on-chain auditor ElGamal pubkey — e.g. mint
+> `9QsnKNvf25R2kwbm5HaspNDroh4gV1Uf8sx7Qt4CyCF2` carries auditor
+> `d8e3a866…15625d3f`. Proof the config reader parses genuine on-chain state.
 
 ## Option B — Helius webhooks (push, low latency, high volume)
 

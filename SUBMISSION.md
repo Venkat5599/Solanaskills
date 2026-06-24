@@ -1,7 +1,7 @@
 # Submission — solana-confidential-skill
 
 **Repo:** https://github.com/Venkat5599/Solanaskills
-**License:** MIT · **CI:** passing · **Tests:** 39 passing · **Demo:** `cd lib && bun run demo`
+**License:** MIT · **CI:** passing · **Tests:** 44 passing · **Demo:** `cd lib && bun run demo`
 
 Draft answers for the Colosseum listing questionnaire. Edit to taste before filing.
 
@@ -43,7 +43,7 @@ kit's CT-sending reference and from the seeded crypto-legal skill. The hard part
   decrypts bytes produced by the production library — byte-identical to on-chain —
   and recovers the exact amount, using only this engine's crypto (no zk-sdk at test
   or run time). This is genuine mainnet-byte compatibility for the decrypt path.
-- **39 tests passing**, `tsc --noEmit` clean, CI runs install + typecheck + test +
+- **44 tests passing**, `tsc --noEmit` clean, CI runs install + typecheck + test +
   demo on every push.
 - **Runnable end-to-end:** `bun run demo` encrypts a synthetic transfer stream
   under a fresh auditor key, then really decrypts + scores it, printing flags and a
@@ -68,10 +68,20 @@ cd Solanaskills && ./install.sh            # → ~/.claude/skills/
 cd lib && bun install && bun test && bun run demo
 ```
 
+- **Real chain wiring, live-tested on devnet.** `lib/src/chain/` ships an
+  `RpcConfidentialObserver` (decodes Token-2022 CT instructions over real RPC) and
+  `readConfidentialMintConfig` (parses a mint's ConfidentialTransferMint extension
+  from chain). `bun run observe` reads a real devnet confidential mint and prints
+  its on-chain auditor ElGamal pubkey. The ZK ElGamal Proof program is currently
+  `executable` on devnet + mainnet.
+- **The chat demo can't hard-fail.** If the LLM gateway is unreachable, the API
+  runs the skill's real engine locally and returns genuine flags + a report hash.
+
 ### Status / honesty note
 The decrypt path is verified against **real `@solana/zk-sdk` ciphertext bytes**
-(byte-identical to on-chain) — proven offline by `bun test`, no localnet. Producing
-*new* live transfers depends on the on-chain ZK ElGamal Proof program; the skill's
-decryption + AML pipeline don't. Once a stream of real transfers exists, pointing
-`observe` at them is the only remaining wiring — the crypto, both ciphertext
-conventions and layouts, and the engine are finished and tested.
+(byte-identical to on-chain), and the observer + config reader are **live-tested on
+devnet**. The one thing this repo can't do in pure JS is *produce* a new
+confidential transfer — `@solana/spl-token` ships no CT instruction builders (that's
+the Rust `spl-token` CLI). Everything up to and including decrypting real Solana
+ciphertext is done and tested; producing a fresh transfer end-to-end is a one-CLI
+step outside the skill's scope.

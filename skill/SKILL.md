@@ -198,10 +198,14 @@ Dry-run the **entire** pipeline with no crypto and no network using
 
 `../lib` — TypeScript core. AML engine, rolling state, budget, reporting, loop,
 **and real twisted-ElGamal decryption** (Ristretto255 + baby-step-giant-step
-discrete log, via `@noble/curves`). `cd lib && bun test` → **39 passing**
+discrete log, via `@noble/curves`). `cd lib && bun test` → **44 passing**
 (incl. encrypt→decrypt round-trips across the full 48-bit range, semantic
 security, wrong-key-fails, and Solana's real lo/hi amount layout), `bunx tsc
 --noEmit` → **clean**.
+
+Real chain wiring lives in `../lib/src/chain/`: `RpcConfidentialObserver` (decodes
+Token-2022 CT instructions over real RPC, oldest-first) + `readConfidentialMintConfig`
+(parses a mint's on-chain auditor key). `bun run observe` is live on devnet.
 
 See it run end-to-end with zero network and zero mainnet:
 

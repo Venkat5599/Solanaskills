@@ -5,18 +5,23 @@
   "license": "MIT",
   "type": "module",
   "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./chain": "./src/chain/index.ts"
+  },
   "scripts": {
     "test": "bun test",
     "typecheck": "tsc --noEmit",
-    "demo": "bun run ../examples/demo.ts"
+    "demo": "bun run ../examples/demo.ts",
+    "observe": "bun run ../examples/observe-devnet.ts"
   },
   "peerDependencies": {
     "@solana/web3.js": "^1.95.0",
     "@solana/spl-token": "^0.4.9"
   },
   "devDependencies": {
-    "@solana/web3.js": "^1.95.0",
-    "@solana/spl-token": "^0.4.9",
+    "@solana/web3.js": "^1.95",
+    "@solana/spl-token": "^0.4.14",
     "typescript": "^5.5.0"
   },
   "dependencies": {
