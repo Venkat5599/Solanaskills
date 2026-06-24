@@ -42,25 +42,42 @@ const decryptor = new SplAuditorDecryptor({ auditorElGamalSecret: auditor.secret
 const amount = await decryptor.decrypt(record);     // bigint, base units
 ```
 
-## The one version-dependent seam
+## Solana's production lo/hi layout (CT09 — implemented + tested)
 
-The cryptography is fixed. The only thing that changes with `@solana/spl-token`
-versions is the **wire layout** of the auditor ciphertext inside the on-chain
-`ConfidentialTransfer` instruction. Map it to the engine's limb layout with one
-adapter — everything else stays put:
+Solana does **not** encode the on-chain auditor amount as N equal limbs. It
+splits the 48-bit transfer amount into a **16-bit low** ElGamal ciphertext and a
+**32-bit high** ElGamal ciphertext (each `commitment‖handle`, 64 bytes; 128 bytes
+total). That real layout is implemented and round-trip tested offline — decrypt
+it by selecting `layout: "lohi"`:
 
 ```ts
-new SplAuditorDecryptor({
+import { SplAuditorDecryptor, splLoHiCiphertextParser } from "solana-confidential-compliance";
+
+const decryptor = new SplAuditorDecryptor({
   auditorElGamalSecret: auditor.secret,
-  parseAuditorCiphertext: (raw) => toLimbBytes(raw), // C0‖D0, C1‖D1, ... (32-byte points)
+  layout: "lohi",                              // 16-bit low + 32-bit high
+  parseAuditorCiphertext: splLoHiCiphertextParser(), // validates the 128-byte span
 });
+const amount = await decryptor.decrypt(record); // lo | (hi << 16)
 ```
 
-Default `parseAuditorCiphertext` is identity — it consumes the output of this
-skill's own `encryptAmount` (used by the demo and tests). For **live mainnet
-transfers**, implement `toLimbBytes` against the installed zk-sdk auditor-handle
-layout. That is the single integration point; verify it against the installed
-version (guardrail **CT09**).
+The 32-bit high limb needs a one-time discrete-log table (~9s build, ~9k EC ops —
+exactly the precomputed table Solana's SDK ships). It is built once in the
+decryptor constructor and cached, so per-transfer decryption stays in the tens of
+milliseconds (a 10,000-token transfer decrypts in ~50 ms after warm-up). Warm it
+ahead with `warmTable(32)` if you want a hot start.
+
+### The only remaining seam
+
+The cryptography and both layouts (`limbed`, `lohi`) are fixed and tested. The
+sole thing that can change across `@solana/spl-token` versions is the **byte
+framing** around those two ElGamal ciphertexts. `splLoHiCiphertextParser()`
+implements the canonical `lo‖hi` span; if a future release reframes it, override
+`parseAuditorCiphertext` — the crypto and the AML engine never change. Verify the
+framing against the installed version (guardrail **CT09**).
+
+The legacy equal-limb path (`layout: "limbed"`, default) consumes this skill's own
+`encryptAmount` output and powers the demo and tests.
 
 ## Key handling (CT01/CT02)
 
@@ -76,6 +93,7 @@ version (guardrail **CT09**).
 The on-chain ZK ElGamal program is audit-paused on mainnet/devnet (2026), so live
 on-chain confidential transfers are temporarily unavailable to *produce*. This
 skill's decryption does not depend on that program — it runs today, offline, as
-the `bun run demo` and `bun test` prove. When the program re-enables, only the
-`parseAuditorCiphertext` adapter needs wiring to real transfers; the crypto and
-the entire AML pipeline are already done.
+the `bun run demo` and `bun test` prove, including the real lo/hi layout. When the
+program re-enables, the only work is pointing `observe` at live transfers; the
+crypto, both ciphertext layouts, and the entire AML pipeline are already done and
+tested.

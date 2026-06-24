@@ -13,13 +13,17 @@ export {
   pubkeyFromSecret,
   encryptAmount,
   decryptAmount,
+  encryptAmountLoHi,
+  decryptAmountLoHi,
   DEFAULT_LIMBS,
+  LOHI_SPLIT,
   type ElGamalKeypair,
   type LimbConfig,
 } from "./crypto/twisted-elgamal.ts";
 export { warmTable, babyTable } from "./crypto/dlog.ts";
 export {
   splAuditorCiphertextParser,
+  splLoHiCiphertextParser,
   sliceLoHi,
   RISTRETTO_POINT_BYTES,
   ELGAMAL_CIPHERTEXT_BYTES,

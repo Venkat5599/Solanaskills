@@ -28,11 +28,12 @@
 ## This skill's code
 
 - Crypto: `../lib/src/crypto` — real twisted-ElGamal over Ristretto255
-  (`@noble/curves`), baby-step-giant-step discrete log, and the canonical
-  `commitment||handle` ciphertext parser.
+  (`@noble/curves`), baby-step-giant-step discrete log, the canonical
+  `commitment||handle` parser, and Solana's lo(16)/hi(32) production layout.
 - Engine + loop: `../lib/src` — pure AML engine, state, budgets, reporting, loop.
-- Tests: `../lib/test` — `bun test` (**30 passing**), incl. encrypt→decrypt
-  round-trips, semantic security, wrong-key-fails, parser round-trip. `tsc` clean.
+- Tests: `../lib/test` — `bun test` (**34 passing**), incl. encrypt→decrypt
+  round-trips, semantic security, wrong-key-fails, parser round-trip, and the
+  real lo/hi layout. `tsc` clean.
 - Demo: `../examples/demo.ts` — `bun run demo`, full pipeline, no network.
 - CI: `.github/workflows/ci.yml` — install + typecheck + test + demo on every push.
 

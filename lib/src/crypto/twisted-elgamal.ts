@@ -125,3 +125,40 @@ export function decryptAmount(
   });
   return amount;
 }
+
+/* ------------------------------------------------------------------ */
+/* Solana production lo/hi split (CT09)                                */
+/*                                                                    */
+/* The on-chain confidential-transfer extension does NOT encode the   */
+/* amount as N equal limbs. It splits the 48-bit transfer amount into  */
+/* a 16-bit LOW ciphertext and a 32-bit HIGH ciphertext, each a single */
+/* ElGamal ciphertext (commitment‖handle). This is the real wire       */
+/* layout `parseAuditorCiphertext` must feed; we implement + test it   */
+/* against our own crypto so the seam is exercised before the on-chain */
+/* ZK program re-enables.                                              */
+/* ------------------------------------------------------------------ */
+
+/** Solana CT amount split: low 16 bits + high 32 bits = 48-bit cap. */
+export const LOHI_SPLIT = { loBits: 16, hiBits: 32 } as const;
+
+/** Encrypt an amount in Solana's lo(16)/hi(32) framing → `[loC‖loD, hiC‖hiD]`. */
+export function encryptAmountLoHi(amount: bigint, pubkey: Pt): Uint8Array {
+  const max = 1n << BigInt(LOHI_SPLIT.loBits + LOHI_SPLIT.hiBits); // 2^48
+  if (amount < 0n || amount >= max) {
+    throw new Error(`amount ${amount} out of range [0, 2^48) for lo/hi split`);
+  }
+  const loMask = (1n << BigInt(LOHI_SPLIT.loBits)) - 1n;
+  const lo = amount & loMask;
+  const hi = amount >> BigInt(LOHI_SPLIT.loBits); // up to 32 bits
+  return serializeCiphertext([encryptLimb(lo, pubkey), encryptLimb(hi, pubkey)]);
+}
+
+/** Decrypt Solana lo(16)/hi(32) framing back to the amount. */
+export function decryptAmountLoHi(bytes: Uint8Array, secret: bigint): bigint {
+  babyTable(LOHI_SPLIT.loBits); // warm the 16-bit table
+  babyTable(LOHI_SPLIT.hiBits); // warm the 32-bit table (built once, cached)
+  const [loCt, hiCt] = deserializeCiphertext(bytes, 2);
+  const lo = BigInt(solveLimb(decryptLimbToPoint(loCt!, secret), LOHI_SPLIT.loBits));
+  const hi = BigInt(solveLimb(decryptLimbToPoint(hiCt!, secret), LOHI_SPLIT.hiBits));
+  return lo | (hi << BigInt(LOHI_SPLIT.loBits));
+}

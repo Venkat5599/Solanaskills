@@ -22,7 +22,9 @@ const cache = new Map<number, Bsgs>();
 function build(limbBits: number): Bsgs {
   const cached = cache.get(limbBits);
   if (cached) return cached;
-  const n = 1 << limbBits;
+  // 2**limbBits, NOT 1 << limbBits — the bitwise shift wraps at 32 bits and
+  // would silently produce a 1-entry table for the 32-bit hi limb (CT09).
+  const n = 2 ** limbBits;
   const m = Math.ceil(Math.sqrt(n));
   const baby = new Map<string, number>();
   let cur: Pt = ZERO;
@@ -38,12 +40,13 @@ function build(limbBits: number): Bsgs {
 /** Recover v from M = v·G for v in [0, 2^limbBits). Throws if no solution. */
 export function solveLimb(M: Pt, limbBits: number, table = build(limbBits)): number {
   const { m, baby, giant } = table;
+  const max = 2 ** limbBits;
   let gamma = M;
   for (let i = 0; i < m; i++) {
     const j = baby.get(pointKey(gamma));
     if (j !== undefined) {
       const v = i * m + j;
-      if (v < 1 << limbBits) return v;
+      if (v < max) return v;
     }
     gamma = gamma.subtract(giant); // γ -= m·G
   }

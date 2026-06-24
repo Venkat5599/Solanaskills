@@ -1,7 +1,7 @@
 # Submission — solana-confidential-skill
 
 **Repo:** https://github.com/Venkat5599/Solanaskills
-**License:** MIT · **CI:** passing · **Tests:** 30 passing · **Demo:** `cd lib && bun run demo`
+**License:** MIT · **CI:** passing · **Tests:** 34 passing · **Demo:** `cd lib && bun run demo`
 
 Draft answers for the Colosseum listing questionnaire. Edit to taste before filing.
 
@@ -38,13 +38,17 @@ kit's CT-sending reference and from the seeded crypto-legal skill. The hard part
   over Ristretto255 (Solana's group) + baby-step-giant-step discrete log. `bun
   test` proves encrypt→decrypt round-trips across the full 48-bit range, ciphertext
   randomization (semantic security), and that the **wrong key cannot decrypt**.
-- **30 tests passing**, `tsc --noEmit` clean, CI runs install + typecheck + test +
+- **34 tests passing**, `tsc --noEmit` clean, CI runs install + typecheck + test +
   demo on every push.
 - **Runnable end-to-end:** `bun run demo` encrypts a synthetic transfer stream
   under a fresh auditor key, then really decrypts + scores it, printing flags and a
   hashed report — no network, no mainnet.
-- The one version-dependent seam (on-chain ciphertext wire layout) is implemented
-  for the canonical `commitment||handle` layout and tested; documented as CT09.
+- **Solana's real amount layout is implemented**, not just the demo's equal limbs:
+  the 16-bit-low + 32-bit-high ElGamal split (`layout: "lohi"` +
+  `splLoHiCiphertextParser()`) decrypts the actual 128-byte on-chain framing,
+  round-trip tested offline. The 32-bit high limb uses a one-time precomputed
+  discrete-log table (Solana ships the same); per-transfer decrypts run in ms.
+  Documented as CT09.
 
 ### How does it fit the kit? (structure)
 Mirrors `solana-game-skill`: progressive `skill/SKILL.md` router → 9 focused
@@ -63,5 +67,6 @@ cd lib && bun install && bun test && bun run demo
 The on-chain ZK ElGamal program is audit-paused on mainnet (2026), so live
 confidential transfers are temporarily unavailable to *produce*. This skill's
 decryption + AML pipeline don't depend on that program — they run today, offline,
-as the demo and tests prove. On re-enable, only the `parseAuditorCiphertext`
-adapter is pointed at live transfers; the crypto and engine are finished.
+as the demo and tests prove, including Solana's real lo/hi amount layout. On
+re-enable, the only work is pointing `observe` at live transfers; the crypto, both
+ciphertext layouts, and the engine are finished and tested.

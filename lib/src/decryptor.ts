@@ -1,7 +1,19 @@
 import type { AuditorDecryptor, ConfidentialTransferRecord } from "./types.ts";
 import { bytesToScalar } from "./crypto/ristretto.ts";
-import { decryptAmount, DEFAULT_LIMBS, type LimbConfig } from "./crypto/twisted-elgamal.ts";
-import { babyTable } from "./crypto/dlog.ts";
+import {
+  decryptAmount, decryptAmountLoHi, DEFAULT_LIMBS, LOHI_SPLIT, type LimbConfig,
+} from "./crypto/twisted-elgamal.ts";
+import { babyTable, warmTable } from "./crypto/dlog.ts";
+
+/**
+ * Ciphertext amount encoding:
+ *   "limbed" — N equal limbs of `limbs.limbBits` (this engine's native format,
+ *              used by the demo, tests, and `encryptAmount`).
+ *   "lohi"   — Solana's PRODUCTION on-chain split: a 16-bit low ciphertext +
+ *              a 32-bit high ciphertext (CT09). Matches `encryptAmountLoHi` and
+ *              the real auditor ciphertext wire layout.
+ */
+export type CiphertextLayout = "limbed" | "lohi";
 
 /**
  * Real auditor decryptor. Twisted-ElGamal over Ristretto255 (the same group
@@ -23,12 +35,20 @@ export interface SplAuditorDecryptorOptions {
    * version-dependent seam; the crypto below is fixed.
    */
   parseAuditorCiphertext?: (raw: Uint8Array) => Uint8Array;
+  /**
+   * Amount encoding. Default "limbed". Set "lohi" to decrypt Solana's real
+   * on-chain 16-bit-low + 32-bit-high split (CT09). The 32-bit high limb needs
+   * a one-time ~9s discrete-log table build (Solana ships this precomputed);
+   * it is warmed in the constructor so per-transfer decryption stays fast.
+   */
+  layout?: CiphertextLayout;
 }
 
 export class SplAuditorDecryptor implements AuditorDecryptor {
   private readonly secret: bigint;
   private readonly cfg: LimbConfig;
   private readonly parse: (raw: Uint8Array) => Uint8Array;
+  private readonly layout: CiphertextLayout;
 
   constructor(opts: SplAuditorDecryptorOptions) {
     this.secret =
@@ -37,12 +57,20 @@ export class SplAuditorDecryptor implements AuditorDecryptor {
         : bytesToScalar(opts.auditorElGamalSecret);
     this.cfg = opts.limbs ?? DEFAULT_LIMBS;
     this.parse = opts.parseAuditorCiphertext ?? ((raw) => raw);
-    babyTable(this.cfg.limbBits); // warm the discrete-log table once
+    this.layout = opts.layout ?? "limbed";
+    if (this.layout === "lohi") {
+      warmTable(LOHI_SPLIT.loBits); // 16-bit low table (instant)
+      warmTable(LOHI_SPLIT.hiBits); // 32-bit high table (one-time build, then cached)
+    } else {
+      babyTable(this.cfg.limbBits); // warm the discrete-log table once
+    }
   }
 
   async decrypt(record: ConfidentialTransferRecord): Promise<bigint> {
     const ciphertext = this.parse(record.auditorCiphertext);
-    return decryptAmount(ciphertext, this.secret, this.cfg);
+    return this.layout === "lohi"
+      ? decryptAmountLoHi(ciphertext, this.secret)
+      : decryptAmount(ciphertext, this.secret, this.cfg);
   }
 }
 

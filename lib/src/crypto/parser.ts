@@ -57,3 +57,21 @@ export function sliceLoHi(raw: Uint8Array): [Uint8Array, Uint8Array] {
     raw.subarray(ELGAMAL_CIPHERTEXT_BYTES, need),
   ];
 }
+
+/**
+ * Parser for Solana's production lo(16-bit)+hi(32-bit) auditor ciphertext
+ * (CT09). Validates the two concatenated 64-byte ElGamal ciphertexts and passes
+ * the exact 128-byte span through to a `layout: "lohi"` decryptor. Throws loudly
+ * on a wrong length (CT03) so a malformed wire format never decrypts to garbage.
+ */
+export function splLoHiCiphertextParser(): (raw: Uint8Array) => Uint8Array {
+  const expected = 2 * ELGAMAL_CIPHERTEXT_BYTES; // lo || hi
+  return (raw: Uint8Array): Uint8Array => {
+    if (raw.length < expected) {
+      throw new Error(
+        `lo/hi auditor ciphertext: expected >= ${expected} bytes (low + high ElGamal), got ${raw.length}`,
+      );
+    }
+    return raw.subarray(0, expected);
+  };
+}
