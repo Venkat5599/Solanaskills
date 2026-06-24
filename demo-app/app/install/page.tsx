@@ -72,6 +72,7 @@ export default function InstallPage() {
           </Link>
           <div className="atop-right mono">
             <Link href="/" className="brk">Home</Link>
+            <Link href="/docs" className="brk">Docs</Link>
             <a href="https://github.com/Venkat5599/Solanaskills" target="_blank" rel="noreferrer" className="brk">
               GitHub
             </a>

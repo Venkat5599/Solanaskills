@@ -100,6 +100,9 @@ export default function Page() {
             <span className="ver">v1.01</span>
           </div>
           <div className="atop-right mono">
+            <Link href="/docs" className="brk">
+              Docs
+            </Link>
             <a href="https://github.com/Venkat5599/Solanaskills" target="_blank" rel="noreferrer" className="brk">
               GitHub
             </a>
