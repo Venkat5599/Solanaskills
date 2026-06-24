@@ -393,6 +393,9 @@ footer .cc { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 
 .brk-fill:hover::before, .brk-fill:hover::after { margin-left: 0.7ch; margin-right: 0.7ch; }
 .brk-fill:hover::before { margin-right: 0.7ch; }
 .brk-lg { font-size: 14px; padding: 14px 24px; }
+/* secondary action: outlined chip that copies the install command */
+.brk-install { background: transparent; border: 1px solid var(--line); padding: 12px 18px; border-radius: 10px; font-family: inherit; transition: border-color .2s, color .2s; }
+.brk-install:hover { border-color: var(--acc); }
 
 /* hero */
 .ahero { padding: 56px 0 30px; }

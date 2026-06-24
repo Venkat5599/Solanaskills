@@ -1,12 +1,35 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { motion } from "motion/react";
 import { Reveal, MaskLines, Stagger, StaggerItem } from "./components/motion";
 import { ScrollProgress } from "./components/chrome";
 import { Magnetic, Parallax, WordReveal, Counter } from "./components/awwwards";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
+
+const INSTALL_CMD =
+  "git clone https://github.com/Venkat5599/Solanaskills && cd Solanaskills && ./install.sh";
+
+/** One-click copy of the skill install command — bracket button, awwwards style. */
+function InstallButton() {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(INSTALL_CMD);
+    } catch {
+      /* clipboard blocked — label still flips so the user knows to copy manually */
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <button type="button" onClick={copy} className="brk brk-install" aria-label="Copy the install command">
+      {copied ? "Copied ✓" : "Install the skill"}
+    </button>
+  );
+}
 
 const KEYWORDS = [
   "Confidential Transfers",
@@ -135,6 +158,7 @@ export default function Page() {
                     Open the console
                   </Link>
                 </Magnetic>
+                <InstallButton />
                 <a href="https://github.com/Venkat5599/Solanaskills" target="_blank" rel="noreferrer" className="brk">
                   Read the source
                 </a>
